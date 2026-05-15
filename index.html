@@ -11,9 +11,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-start { background-color: #158e45; box-shadow: 0 10px 25px -5px rgba(21, 142, 69, 0.4); }
-        .btn-start:hover { background-color: #117036; transform: translateY(-2px); }
-        .agency-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+        .btn-start { background-color: #158e45; transition: all 0.3s; }
+        .btn-start:hover:not(:disabled) { background-color: #117036; transform: translateY(-2px); }
+        .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-6 lg:p-10">
@@ -25,62 +25,47 @@
             </div>
             <div>
                 <h1 class="text-3xl font-black uppercase tracking-tighter italic">Mesa Técnica Master</h1>
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO R.L. es MICOOPE</p>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO R.L.</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="glass px-6 py-3 rounded-2xl flex items-center gap-3">
-                <div id="statusDot" class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span id="statusLabel" class="text-xs font-black uppercase tracking-widest">Desconectado</span>
-            </div>
+        <div class="glass px-6 py-3 rounded-2xl flex items-center gap-3">
+            <div id="cloudDot" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+            <span id="cloudLabel" class="text-xs font-black uppercase tracking-widest text-yellow-500">Conectando a Firebase...</span>
         </div>
     </header>
 
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-4 space-y-6">
             <div class="glass p-8 rounded-[2.5rem] space-y-8 border-t-4 border-[#158e45] shadow-2xl">
-                <div>
-                    <h2 class="text-xl font-black uppercase tracking-tight text-[#158e45] mb-2">Control de Emisión</h2>
-                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Elián • Esquipulas, Chiquimula</p>
-                </div>
+                <h2 class="text-xl font-black uppercase tracking-tight text-[#158e45]">Control de Emisión</h2>
                 
                 <div class="space-y-4">
-                    <button id="btnStart" onclick="iniciarTransmision()" class="w-full btn-start text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 transition-all group">
-                        <i data-lucide="play-circle" class="w-8 h-8 group-hover:scale-110 transition-transform"></i>
-                        INICIAR SEÑAL
+                    <button id="btnCapture" class="w-full bg-slate-800 hover:bg-black text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10 transition-all">
+                        <i data-lucide="camera"></i> 1. CAPTURAR OBS / STICK
+                    </button>
+
+                    <button id="btnStart" disabled class="w-full btn-start text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 transition-all shadow-xl">
+                        <i data-lucide="play-circle" class="w-8 h-8"></i> 2. INICIAR SEÑAL
                     </button>
                     
-                    <button id="btnStop" onclick="detenerTransmision()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all border border-red-500/20 disabled:opacity-20" disabled>
-                        <i data-lucide="stop-circle" class="w-5 h-5"></i>
-                        FINALIZAR TRANSMISIÓN
+                    <button id="btnStop" disabled class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all border border-red-500/20">
+                        <i data-lucide="stop-circle" class="w-5 h-5"></i> FINALIZAR TRANSMISIÓN
                     </button>
-                </div>
-
-                <div class="pt-6 border-t border-white/10">
-                    <div class="flex justify-between items-center mb-4">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Pantallas en Sincronía</p>
-                        <span id="connCount" class="bg-[#158e45] text-white text-[10px] px-2.5 py-1 rounded-full font-black">0</span>
-                    </div>
-                    <div id="agenciesList" class="space-y-2 max-h-[200px] overflow-y-auto pr-2">
-                        <p class="text-[10px] opacity-20 italic text-center py-4 uppercase">Esperando conexión de agencias...</p>
-                    </div>
                 </div>
             </div>
 
-            <div class="glass p-5 rounded-3xl flex items-center gap-4 text-amber-400 border-l-4 border-amber-500">
-                <i data-lucide="alert-triangle" class="w-6 h-6 flex-shrink-0"></i>
-                <p class="text-[10px] font-bold uppercase leading-relaxed">Asegúrate de marcar "Compartir audio" al capturar la ventana de OBS para que se escuche en las agencias.</p>
+            <div class="glass p-5 rounded-3xl flex items-center gap-4 text-blue-400 border-l-4 border-blue-500">
+                <i data-lucide="info" class="w-6 h-6 flex-shrink-0"></i>
+                <p id="systemMsg" class="text-[10px] font-bold uppercase leading-relaxed">Paso 1: Captura la ventana de OBS. Asegúrate de compartir audio.</p>
             </div>
         </div>
 
         <div class="lg:col-span-8 relative glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-4 border-white/5 shadow-2xl">
-            <video id="previewVideo" class="w-full h-full object-contain z-0" autoplay muted playsinline></video>
+            <video id="previewVideo" class="w-full h-full object-contain" autoplay muted playsinline></video>
             
-            <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity duration-300">
-                <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                    <i data-lucide="monitor-off" class="w-10 h-10 text-slate-700"></i>
-                </div>
-                <p class="text-slate-500 font-black uppercase tracking-[0.4em] text-xs" id="statusMessage">Esperando Señal de OBS</p>
+            <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10">
+                <i data-lucide="monitor-off" class="w-16 h-16 text-slate-700 mb-6"></i>
+                <p class="text-slate-500 font-black uppercase tracking-[0.4em] text-xs">Esperando Señal</p>
             </div>
 
             <div id="liveBadge" class="absolute top-8 left-8 bg-red-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
@@ -89,140 +74,138 @@
         </div>
     </main>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
         lucide.createIcons();
+
+        // Tu configuración exacta
+        const firebaseConfig = {
+            apiKey: "AIzaSyACfn6C6_XqLDQI29f6uHUUwlCQkSCXNYk",
+            authDomain: "costos-comunicacion-digital.firebaseapp.com",
+            databaseURL: "https://costos-comunicacion-digital-default-rtdb.firebaseio.com",
+            projectId: "costos-comunicacion-digital",
+            storageBucket: "costos-comunicacion-digital.firebasestorage.app",
+            messagingSenderId: "299496606379",
+            appId: "1:299496606379:web:a4d6609ff79eebff0c85ee"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const MASTER_ID = 'COOSAJO-MASTER-MAGIC'; 
         let peer = null;
         let localStream = null;
-        
-        let agencias = new Map(); 
 
+        // Elementos UI
+        const btnCapture = document.getElementById('btnCapture');
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const previewVideo = document.getElementById('previewVideo');
+        const systemMsg = document.getElementById('systemMsg');
+
+        // Inicializar Servidor de Video P2P
         function initMaster() {
             if (peer) peer.destroy();
             peer = new Peer(MASTER_ID);
 
             peer.on('open', (id) => {
-                document.getElementById('statusLabel').textContent = "Mesa Lista";
-                document.getElementById('statusDot').className = "w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]";
-                console.log("Servidor iniciado:", id);
+                document.getElementById('cloudLabel').textContent = "Sistema Listo";
+                document.getElementById('cloudLabel').className = "text-xs font-black uppercase tracking-widest text-green-500";
+                document.getElementById('cloudDot').className = "w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]";
+                
+                // Forzamos el estado a "apagado" al abrir la mesa por seguridad
+                actualizarFirebase(false);
             });
 
-            peer.on('connection', (conn) => {
-                console.log("Nueva agencia vinculada:", conn.peer);
-                agencias.set(conn.peer, conn);
-                updateAgenciesUI();
-
+            // Cuando una agencia lee Firebase y nos llama, le damos el video
+            peer.on('call', (call) => {
                 if (localStream) {
-                    setTimeout(() => {
-                        console.log("Empujando señal a agencia tardía...");
-                        try {
-                            peer.call(conn.peer, localStream);
-                        } catch (e) { console.error("Error al empujar a nueva agencia:", e); }
-                    }, 1000);
+                    console.log("Conectando pantalla de agencia...");
+                    call.answer(localStream);
+                } else {
+                    call.answer(); // Contestamos vacío si no hay stream
                 }
-
-                conn.on('close', () => {
-                    agencias.delete(conn.peer);
-                    updateAgenciesUI();
-                });
             });
 
             peer.on('error', (err) => {
-                if(err.type === 'unavailable-id') alert("¡Error! Ya hay otra mesa técnica abierta con este nombre.");
-                setTimeout(initMaster, 5000);
+                if(err.type === 'unavailable-id') alert("Cierra las otras pestañas de la Mesa Técnica.");
             });
         }
 
-        function updateAgenciesUI() {
-            const list = document.getElementById('agenciesList');
-            document.getElementById('connCount').textContent = agencias.size;
-            
-            if (agencias.size === 0) {
-                list.innerHTML = '<p class="text-[10px] opacity-20 italic text-center py-4 uppercase">Esperando conexión de agencias...</p>';
-                return;
-            }
-            
-            list.innerHTML = Array.from(agencias.keys()).map(id => `
-                <div class="agency-card p-3 rounded-xl flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span class="text-[10px] font-black uppercase opacity-70">Pantalla: ${id.split('-').pop()}</span>
-                    </div>
-                    <span class="text-[8px] font-bold text-green-500 uppercase tracking-tighter">Sincronizado</span>
-                </div>
-            `).join('');
-        }
-
-        async function iniciarTransmision() {
+        // Función para actualizar Firebase
+        async function actualizarFirebase(estado) {
             try {
-                // 1. Simplificamos las peticiones para que la Mac no bloquee el stream
-                localStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true,
-                    audio: true
+                await setDoc(doc(db, "coosajo_system", "broadcast_state"), {
+                    isLive: estado,
+                    masterId: MASTER_ID,
+                    timestamp: Date.now()
                 });
-                
-                console.log("Stream capturado con éxito");
-
-                // 2. Forzamos la reproducción en la previsualización
-                const videoElement = document.getElementById('previewVideo');
-                videoElement.srcObject = localStream;
-                videoElement.onloadedmetadata = () => {
-                    videoElement.play().catch(e => console.error("Error al reproducir previsualización:", e));
-                };
-                
-                // 3. Ocultamos el overlay (usamos style para que sea a prueba de fallos)
-                document.getElementById('noSignal').style.display = 'none';
-                document.getElementById('liveBadge').classList.remove('opacity-0');
-                
-                // 4. Cambiamos estado de los botones
-                document.getElementById('btnStart').disabled = true;
-                document.getElementById('btnStart').classList.add('opacity-30');
-                document.getElementById('btnStop').disabled = false;
-
-                // Si el usuario deja de compartir desde el menú del navegador
-                if (localStream.getVideoTracks().length > 0) {
-                    localStream.getVideoTracks()[0].onended = detenerTransmision;
-                }
-
-                // 5. Empujamos el video a todas las agencias registradas
-                console.log(`Enviando señal a ${agencias.size} agencias...`);
-                agencias.forEach((conn, id) => {
-                    try {
-                        console.log("Llamando a pantalla:", id);
-                        peer.call(id, localStream);
-                    } catch (callError) {
-                        console.error("Fallo al llamar a", id, callError);
-                    }
-                });
-
-            } catch (err) { 
-                console.error("Error en la captura:", err); 
-                document.getElementById('statusMessage').textContent = "Error: Captura cancelada o bloqueada.";
-                setTimeout(() => {
-                    document.getElementById('statusMessage').textContent = "Esperando Señal de OBS";
-                }, 3000);
+            } catch (e) {
+                console.error("Error en Firebase:", e);
+                systemMsg.textContent = "Error al conectar con la base de datos. Revisa las reglas.";
             }
         }
 
-        function detenerTransmision() {
+        // 1. Capturar Pantalla
+        btnCapture.addEventListener('click', async () => {
+            try {
+                localStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true, audio: true
+                });
+                
+                previewVideo.srcObject = localStream;
+                document.getElementById('noSignal').style.display = 'none';
+                
+                btnStart.disabled = false;
+                btnCapture.classList.add('opacity-30');
+                systemMsg.textContent = "Paso 2: Haz clic en 'INICIAR SEÑAL' para mandar el video a las agencias.";
+
+                localStream.getVideoTracks()[0].onended = detenerTransmision;
+            } catch (err) { 
+                console.error("Error al capturar:", err); 
+                systemMsg.textContent = "Captura cancelada. Intenta de nuevo.";
+            }
+        });
+
+        // 2. Iniciar Transmisión
+        btnStart.addEventListener('click', async () => {
+            if (!localStream) return;
+            
+            // Le avisamos a Firebase que ya estamos en vivo
+            await actualizarFirebase(true);
+
+            document.getElementById('liveBadge').classList.remove('opacity-0');
+            btnStart.disabled = true;
+            btnStart.classList.add('opacity-30');
+            btnStop.disabled = false;
+            systemMsg.textContent = "¡AL AIRE! Las pantallas se están conectando automáticamente.";
+        });
+
+        // 3. Detener Transmisión
+        async function detenerTransmision() {
             if (localStream) {
                 localStream.getTracks().forEach(t => t.stop());
                 localStream = null;
             }
             
-            document.getElementById('previewVideo').srcObject = null;
-            document.getElementById('noSignal').style.display = 'flex'; // Mostramos de nuevo
+            // Le avisamos a Firebase que cortamos
+            await actualizarFirebase(false);
+
+            previewVideo.srcObject = null;
+            document.getElementById('noSignal').style.display = 'flex';
             document.getElementById('liveBadge').classList.add('opacity-0');
             
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStart').classList.remove('opacity-30');
-            document.getElementById('btnStop').disabled = true;
+            btnStart.disabled = true;
+            btnStop.disabled = true;
+            btnCapture.classList.remove('opacity-30');
+            systemMsg.textContent = "Transmisión finalizada. Las agencias regresaron a sus banners.";
             
-            // Avisar a agencias que la señal terminó para que regresen a banners
-            agencias.forEach((conn) => {
-                try { conn.send('STOP_SIGNAL'); } catch(e) {}
-            });
+            setTimeout(() => location.reload(), 1500);
         }
+
+        btnStop.addEventListener('click', detenerTransmision);
 
         initMaster();
     </script>
