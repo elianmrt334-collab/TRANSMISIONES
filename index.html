@@ -15,7 +15,6 @@
         .btn-primary:hover { background-color: #117036; transform: translateY(-2px); shadow: 0 10px 20px rgba(21, 142, 69, 0.3); }
         .btn-primary:disabled { opacity: 0.3; transform: none; cursor: not-allowed; }
         
-        /* Animación para el estado de error */
         .pulse-red { animation: pulse-red 2s infinite; }
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
@@ -34,7 +33,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-black uppercase tracking-tighter italic">Mesa Técnica Maestra</h1>
-                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">COOSAJO R.L. • Control de Transmisión Directa</p>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">COOSAJO R.L. • Elián Master Control</p>
             </div>
         </div>
         <div class="glass px-6 py-3 rounded-2xl flex items-center gap-3">
@@ -46,75 +45,81 @@
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Panel Lateral de Control -->
         <div class="lg:col-span-1 space-y-6">
+            
+            <!-- NUEVO: Panel de Configuración OBS -->
+            <div class="glass p-6 rounded-[2rem] border-l-4 border-blue-500 bg-blue-500/5">
+                <div class="flex items-center gap-3 mb-4">
+                    <i data-lucide="settings-2" class="text-blue-400"></i>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-blue-400">Configuración en OBS</h3>
+                </div>
+                <div class="space-y-3 text-[11px] text-slate-300">
+                    <p>1. En OBS, clic derecho en la <strong class="text-white text-xs">Vista Previa</strong>.</p>
+                    <p>2. Selecciona <strong class="text-white text-xs">Proyector de ventana</strong>.</p>
+                    <p>3. En esta página, dale a <strong class="text-blue-400 uppercase">Capturar</strong> y elige esa ventana.</p>
+                    <div class="pt-2">
+                        <label class="text-[9px] text-slate-500 uppercase font-bold block mb-1">ID Maestro (Copiar para agencias):</label>
+                        <div class="flex gap-2">
+                            <input readonly value="COOSAJO-MASTER-ELIAN-DIRECT" class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-blue-300">
+                            <button onclick="copiarID()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-lg transition-colors">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="glass p-8 rounded-[2.5rem] space-y-6 border-t-4 border-[#158e45] shadow-2xl">
                 <h2 class="text-xl font-black uppercase tracking-tight text-[#158e45] mb-4">Gestión de Emisión</h2>
                 
-                <div id="connectionAlert" class="hidden p-4 bg-red-500/10 border border-red-500/20 rounded-2xl mb-4">
-                    <p class="text-xs text-red-400 font-bold leading-tight">
-                        ⚠️ Conexión de red bloqueada por el entorno de previsualización. 
-                        <br><span class="opacity-70 font-normal">Usa el botón de abajo para probar la interfaz.</span>
-                    </p>
-                    <button onclick="activarSimulacion()" class="mt-3 text-[10px] bg-red-500 text-white px-3 py-1.5 rounded-lg font-black uppercase">Activar Modo Simulación</button>
+                <div id="connectionAlert" class="hidden p-4 bg-red-500/10 border border-red-500/20 rounded-2xl mb-4 text-center">
+                    <p class="text-xs text-red-400 font-bold mb-2">⚠️ Error de Red detectado en Canvas</p>
+                    <button onclick="activarSimulacion()" class="text-[9px] bg-red-500 text-white px-4 py-2 rounded-xl font-black uppercase">Activar Prueba Visual</button>
                 </div>
 
                 <div class="space-y-4">
-                    <!-- Paso 1: Captura -->
                     <button id="btnCapture" onclick="capturarOBS()" class="w-full bg-slate-800 hover:bg-black text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 transition-all border border-white/10">
-                        <i data-lucide="monitor"></i> 1. CAPTURAR OBS / STICK
+                        <i data-lucide="monitor"></i> 1. CAPTURAR VENTANA OBS
                     </button>
                     
-                    <!-- Paso 2: Configuración de Tiempo -->
                     <div class="pt-4 border-t border-white/10">
-                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">2. Tiempo de Partido (Minutos)</label>
-                        <div class="flex items-center gap-3">
-                            <input type="number" id="matchDuration" value="15" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xl font-black text-center outline-none focus:border-[#158e45]">
-                        </div>
+                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">2. Tiempo del Bloque (Minutos)</label>
+                        <input type="number" id="matchDuration" value="15" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xl font-black text-center outline-none focus:border-[#158e45]">
                     </div>
 
-                    <!-- Paso 3: Lanzar Señal -->
                     <button id="btnStart" onclick="iniciarTransmision()" disabled class="w-full btn-primary text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-4 shadow-xl">
                         <i data-lucide="play-circle"></i> ENVIAR SEÑAL
                     </button>
 
-                    <!-- Paso 4: Finalizar -->
                     <button id="btnStop" onclick="detenerTodo()" disabled class="w-full bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white py-4 rounded-2xl font-black flex items-center justify-center gap-4 transition-all border border-red-500/30">
                         <i data-lucide="stop-circle"></i> FINALIZAR TODO
                     </button>
                 </div>
 
-                <!-- Lista de Agencias Conectadas -->
+                <!-- Lista de Agencias -->
                 <div class="pt-6 border-t border-white/10">
                     <div class="flex justify-between items-center mb-4">
                         <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Pantallas Online</p>
                         <span id="agenciesCount" class="bg-[#158e45] text-white text-[10px] px-2 py-0.5 rounded-full font-black">0</span>
                     </div>
-                    <div id="agenciesList" class="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                        <p id="waitText" class="text-[10px] opacity-30 italic text-center py-4">Esperando que las agencias abran el sitio...</p>
+                    <div id="agenciesList" class="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+                        <p id="waitText" class="text-[10px] opacity-30 italic text-center py-4">Esperando conexión...</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Advertencia Audio -->
-            <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
-                <p class="text-[10px] text-amber-500 font-bold leading-tight flex gap-3">
-                    <i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
-                    IMPORTANTE: Al capturar la pantalla, asegúrate de marcar la casilla "Compartir audio del sistema" para que se escuche el partido.
-                </p>
-            </div>
         </div>
 
-        <!-- Monitor de Previsualización -->
+        <!-- Monitor -->
         <div class="lg:col-span-2 relative glass rounded-[2.5rem] overflow-hidden bg-black flex items-center justify-center border-4 border-white/5 shadow-2xl">
             <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
             
             <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 transition-opacity duration-500">
-                <i data-lucide="video-off" class="w-20 h-20 text-slate-800 mb-4"></i>
-                <p class="text-slate-600 font-black uppercase tracking-[0.4em]">Monitor Maestro</p>
+                <i data-lucide="video-off" class="w-20 h-20 text-slate-800 mb-4 opacity-10"></i>
+                <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-xs">Monitor Maestro Esquipulas</p>
             </div>
 
             <div id="liveIndicator" class="absolute top-8 left-8 bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 opacity-0 transition-opacity duration-300">
                 <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase tracking-tighter">Transmitiendo en Vivo</span>
+                <span class="text-[10px] font-black uppercase tracking-tighter">Transmitiendo a Agencias</span>
             </div>
         </div>
     </main>
@@ -132,22 +137,28 @@
         let connections = [];
         let simulationMode = false;
 
-        // 1. Inicializar el Servidor Maestro con manejo de errores para Canvas
+        function copiarID() {
+            const el = document.createElement('textarea');
+            el.value = MASTER_ID;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert("ID Copiado al portapapeles");
+        }
+
         function initMaster() {
             try {
                 if (peer) peer.destroy();
-                
                 peer = new Peer(MASTER_ID);
 
                 peer.on('open', (id) => {
                     document.getElementById('statusLabel').textContent = "Mesa Lista";
                     document.getElementById('statusDot').className = "w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]";
                     document.getElementById('connectionAlert').classList.add('hidden');
-                    console.log("Servidor Maestro abierto con ID:", id);
                 });
 
                 peer.on('connection', (conn) => {
-                    console.log("Nueva agencia detectada:", conn.peer);
                     connections = connections.filter(c => c.peer !== conn.peer);
                     connections.push(conn);
                     updateAgenciesUI();
@@ -159,82 +170,54 @@
 
                 peer.on('error', (err) => {
                     console.error("PeerJS Error:", err);
-                    if (err.type === 'unavailable-id') {
-                        document.getElementById('statusLabel').textContent = "ID en Uso";
-                    } else {
-                        // Detectar bloqueo de Canvas
-                        mostrarErrorRed();
+                    if (err.type !== 'unavailable-id') {
+                        document.getElementById('statusLabel').textContent = "Error Red";
+                        document.getElementById('statusDot').className = "w-3 h-3 bg-red-500 rounded-full pulse-red";
+                        document.getElementById('connectionAlert').classList.remove('hidden');
                     }
                 });
 
             } catch (e) {
                 console.error("Error al inicializar Peer:", e);
-                mostrarErrorRed();
             }
-        }
-
-        function mostrarErrorRed() {
-            document.getElementById('statusLabel').textContent = "Error Red";
-            document.getElementById('statusDot').className = "w-3 h-3 bg-red-500 rounded-full pulse-red";
-            document.getElementById('connectionAlert').classList.remove('hidden');
         }
 
         function activarSimulacion() {
             simulationMode = true;
-            document.getElementById('statusLabel').textContent = "Modo Simulación";
+            document.getElementById('statusLabel').textContent = "Modo Prueba";
             document.getElementById('statusDot').className = "w-3 h-3 bg-blue-500 rounded-full";
             document.getElementById('connectionAlert').classList.add('hidden');
-            document.getElementById('waitText').textContent = "Simulando agencias conectadas...";
-            
-            // Simular algunas agencias para probar el UI
+            document.getElementById('waitText').textContent = "Simulando agencias...";
             connections = [
-                { peer: 'AGENCIA-ZONA-1', send: (d) => console.log('Sim: Enviando a Z1', d) },
-                { peer: 'AGENCIA-ESQUIPULAS', send: (d) => console.log('Sim: Enviando a EQ', d) }
+                { peer: 'AGENCIA-ZONA-1', send: () => {} },
+                { peer: 'AGENCIA-ZONA-10', send: () => {} }
             ];
             updateAgenciesUI();
         }
 
-        // 2. Capturar el contenido de OBS / Stick
         async function capturarOBS() {
             try {
                 localStream = await navigator.mediaDevices.getDisplayMedia({
                     video: { frameRate: 60, cursor: "never" },
-                    audio: { 
-                        echoCancellation: false, 
-                        noiseSuppression: false,
-                        autoGainControl: false
-                    }
+                    audio: { echoCancellation: false, noiseSuppression: false }
                 });
-                
                 preview.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('hidden');
                 document.getElementById('btnStart').disabled = false;
                 document.getElementById('btnCapture').classList.add('opacity-50');
-
                 localStream.getVideoTracks()[0].onended = detenerTodo;
-
-            } catch (err) {
-                console.error("Error al capturar pantalla:", err);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // 3. Lanzar la transmisión
         function iniciarTransmision() {
             if (!localStream && !simulationMode) return;
-
             const duration = document.getElementById('matchDuration').value;
 
             if (!simulationMode) {
                 connections.forEach(conn => {
-                    console.log("Enviando video a:", conn.peer);
-                    conn.send({
-                        type: 'START_MATCH',
-                        duration: duration
-                    });
+                    conn.send({ type: 'START_MATCH', duration: duration });
                     peer.call(conn.peer, localStream);
                 });
-            } else {
-                console.log("SIMULACIÓN: Transmisión iniciada por " + duration + " minutos.");
             }
 
             document.getElementById('liveIndicator').classList.remove('opacity-0');
@@ -243,50 +226,38 @@
             document.getElementById('matchDuration').disabled = true;
         }
 
-        // 4. UI de Agencias
         function updateAgenciesUI() {
             agenciesCount.textContent = connections.length;
             if (connections.length === 0) {
                 agenciesList.innerHTML = '<p class="text-[10px] opacity-30 italic text-center py-4">Esperando pantallas...</p>';
                 return;
             }
-
             agenciesList.innerHTML = connections.map(c => `
-                <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5 animate-in fade-in duration-500">
+                <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
                     <div class="flex items-center gap-3">
                         <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span class="text-[10px] font-black uppercase tracking-tighter opacity-70">${c.peer.substring(0, 15)}</span>
+                        <span class="text-[10px] font-black uppercase opacity-70">${c.peer.substring(0, 15)}</span>
                     </div>
-                    <span class="text-[8px] font-bold text-[#158e45] uppercase">Sincronizado</span>
                 </div>
             `).join('');
         }
 
-        // 5. Detener
         function detenerTodo() {
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
-            
-            if (!simulationMode) {
-                connections.forEach(conn => {
-                    conn.send({ type: 'STOP_ALL' });
-                });
-            }
+            if (!simulationMode) connections.forEach(conn => conn.send({ type: 'STOP_ALL' }));
 
             preview.srcObject = null;
             document.getElementById('noSignal').classList.remove('hidden');
             document.getElementById('liveIndicator').classList.add('opacity-0');
-            
             document.getElementById('btnStart').disabled = true;
             document.getElementById('btnStop').disabled = true;
             document.getElementById('btnCapture').classList.remove('opacity-50');
             document.getElementById('matchDuration').disabled = false;
 
-            if (!simulationMode) {
-                setTimeout(() => location.reload(), 1000);
-            }
+            if (!simulationMode) setTimeout(() => location.reload(), 1000);
         }
 
         initMaster();
