@@ -16,6 +16,8 @@
         .btn-action:active:not(:disabled) { transform: scale(0.95); }
         .input-key { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
         .input-key:focus { border-color: #158e45; outline: none; box-shadow: 0 0 15px rgba(21, 142, 69, 0.2); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-6 lg:p-10">
@@ -27,8 +29,8 @@
                 <i data-lucide="radio" class="text-white w-8 h-8"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-black uppercase tracking-tighter italic italic">Broadcaster Center</h1>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Cloud Platform v4.0</p>
+                <h1 class="text-3xl font-black uppercase tracking-tighter italic">Broadcaster Center</h1>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Cloud Platform v4.1 (Mac Compatible)</p>
             </div>
         </div>
         
@@ -41,7 +43,7 @@
     </header>
 
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Panel de Control de Transmisión -->
+        <!-- Panel de Control -->
         <div class="lg:col-span-4 space-y-6">
             <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#158e45] to-transparent"></div>
@@ -64,32 +66,39 @@
                             </div>
                         </div>
 
-                        <div class="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
-                            <p class="text-[10px] text-blue-400 leading-relaxed italic">
-                                * Esta llave vincula tu OBS con todas las agencias. No la compartas fuera de COOSAJO.
+                        <!-- Ayuda para Mac -->
+                        <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                            <p class="text-[10px] text-blue-300 font-bold uppercase mb-2 flex items-center gap-2">
+                                <i data-lucide="apple" class="w-3 h-3"></i> Tips para Mac:
                             </p>
+                            <ul class="text-[9px] text-slate-400 space-y-1 list-disc pl-3">
+                                <li>En OBS: Clic derecho > <strong>Proyector de ventana (Previsualización)</strong></li>
+                                <li>En Ajustes de Mac: Privacidad > Grabación de pantalla > Activa <strong>Chrome</strong></li>
+                                <li>Si no aparece la ventana de OBS, asegúrate de que <strong>no esté minimizada</strong></li>
+                            </ul>
                         </div>
                     </div>
 
                     <!-- Fuente de Video -->
                     <div class="pt-6 border-t border-white/5 space-y-4">
-                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest block">Fuente de Captura (OBS)</label>
-                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10">
-                            <i data-lucide="monitor"></i> SELECCIONAR PROYECTOR OBS
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest block text-center">Fuente de Captura</label>
+                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-[#158e45]/20 text-[#158e45] hover:bg-[#158e45] hover:text-white py-5 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 border border-[#158e45]/30">
+                            <i data-lucide="monitor" class="w-6 h-6"></i>
+                            <span>VINCULAR OBS / PANTALLA</span>
                         </button>
                     </div>
 
                     <!-- Parámetros -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Corte Ads</span>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Bloque Ads</span>
                             <div class="flex items-center gap-2">
                                 <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-12 outline-none">
                                 <span class="text-[10px] font-bold opacity-30">MIN</span>
                             </div>
                         </div>
                         <div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex flex-col justify-center">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Estado Red</span>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Señal P2P</span>
                             <span id="networkTag" class="text-[10px] font-black text-blue-400 uppercase">Standby</span>
                         </div>
                     </div>
@@ -100,14 +109,14 @@
                             <i data-lucide="broadcast"></i> PUBLICAR SEÑAL
                         </button>
                         <button id="btnStop" onclick="stopStream()" disabled class="w-full btn-action mt-4 bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white py-4 rounded-2xl font-black text-xs border border-red-500/20 disabled:opacity-20">
-                            FINALIZAR TRANSMISIÓN
+                            DETENER TODO
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Monitor de Previsualización -->
+        <!-- Monitor Maestro -->
         <div class="lg:col-span-8 flex flex-col gap-6">
             <div class="relative flex-1 glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-[8px] border-white/5 shadow-2xl">
                 <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
@@ -116,29 +125,29 @@
                     <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
                         <i data-lucide="video-off" class="w-8 h-8 text-slate-700"></i>
                     </div>
-                    <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Monitor de Pre-Emisión</p>
+                    <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Esperando captura de OBS</p>
                 </div>
 
                 <!-- On Air Badge -->
                 <div id="onAirBadge" class="absolute top-8 left-8 bg-red-600 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
                     <div class="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
-                    <span class="text-xs font-black uppercase tracking-widest">AL AIRE - AGENCIAS CONECTADAS</span>
+                    <span class="text-xs font-black uppercase tracking-widest">AL AIRE EN AGENCIAS</span>
                 </div>
             </div>
 
-            <!-- Listado de Agencias (Feedback) -->
+            <!-- Listado de Agencias -->
             <div class="glass p-6 rounded-3xl flex items-center justify-between">
                 <div class="flex items-center gap-8">
                     <div class="flex flex-col">
                         <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Espectadores</span>
                         <span id="agenciesCount" class="text-2xl font-black text-[#158e45]">0</span>
                     </div>
-                    <div id="agenciesList" class="flex gap-2 overflow-x-auto max-w-md">
+                    <div id="agenciesList" class="flex gap-2 overflow-x-auto max-w-md custom-scrollbar">
                         <!-- Pantallas dinámicas -->
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-500 uppercase">Localización Master</p>
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sede Central</p>
                     <p class="text-xs font-bold text-white">Esquipulas, Chiquimula</p>
                 </div>
             </div>
@@ -152,7 +161,7 @@
 
         lucide.createIcons();
 
-        // 1. Init Firebase (Usa los valores automáticos del entorno)
+        // 1. Init Firebase (Sigue Regla 1 y 3)
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-platform-key';
         const app = initializeApp(firebaseConfig);
@@ -168,18 +177,21 @@
         // 2. Auth & Cloud Listeners
         const init = async () => {
             try {
+                // Regla 3: Auth antes de cualquier operación
                 await signInAnonymously(auth);
                 onAuthStateChanged(auth, (u) => {
                     user = u;
                     if (u) {
-                        document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase">Nube Lista</span>`;
+                        document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase">Nube Sincronizada</span>`;
                         listenToAgencies();
                     }
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Error Auth:", e); }
         };
 
         const listenToAgencies = () => {
+            if (!user) return;
+            // Regla 1: Ruta estricta de colección
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'screens'));
             onSnapshot(q, (snapshot) => {
                 activeScreens = snapshot.docs.map(doc => doc.data());
@@ -191,7 +203,8 @@
             document.getElementById('agenciesCount').textContent = activeScreens.length;
             const list = document.getElementById('agenciesList');
             list.innerHTML = activeScreens.map(s => `
-                <div class="bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap">
+                <div class="bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                     <span class="text-[9px] font-black uppercase opacity-60">${s.name || 'Agencia'}</span>
                 </div>
             `).join('');
@@ -200,26 +213,40 @@
         // 3. Captura y Streaming
         window.startCapture = async () => {
             try {
+                // getDisplayMedia activará el selector nativo de macOS
                 localStream = await navigator.mediaDevices.getDisplayMedia({
                     video: { frameRate: 60, cursor: "never" },
-                    audio: { echoCancellation: false, noiseSuppression: false }
+                    audio: { 
+                        echoCancellation: false, 
+                        noiseSuppression: false,
+                        autoGainControl: false 
+                    }
                 });
+                
                 preview.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('opacity-0');
                 document.getElementById('btnStart').disabled = false;
                 
-                // Init Peer con la Llave ingresada
+                // Init Peer con la Llave
                 const key = document.getElementById('streamKey').value;
+                if (peer) peer.destroy();
+                
                 peer = new Peer(key);
-                peer.on('open', () => {
+                peer.on('open', (id) => {
                     document.getElementById('networkTag').textContent = "Server Online";
                 });
+                
                 peer.on('call', (call) => {
                     if (localStream) call.answer(localStream);
                 });
 
-                localStream.getVideoTracks()[0].onended = broadcastStop;
-            } catch (e) { console.error(e); }
+                localStream.getVideoTracks()[0].onended = () => {
+                    window.stopStream();
+                };
+            } catch (e) { 
+                console.error("Error al capturar:", e);
+                alert("No se pudo iniciar la captura. Asegúrate de dar permisos de 'Grabación de pantalla' a Chrome en Ajustes de Mac y que OBS no esté minimizado.");
+            }
         };
 
         window.publishStream = async () => {
@@ -227,7 +254,7 @@
             const key = document.getElementById('streamKey').value;
             const duration = document.getElementById('matchTime').value;
 
-            // Notificar a la nube que la transmisión está activa para esta llave
+            // Regla 1: Ruta estricta para el estado
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
                 isLive: true,
                 streamKey: key,
@@ -240,18 +267,21 @@
             document.getElementById('btnStop').disabled = false;
         };
 
-        window.broadcastStop = async () => {
+        window.stopStream = async () => {
             if (!user) return;
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
                 isLive: false
             });
-            setTimeout(() => location.reload(), 1000);
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+            }
+            setTimeout(() => location.reload(), 800);
         };
 
         window.copyKey = () => {
             const val = document.getElementById('streamKey').value;
             navigator.clipboard.writeText(val);
-            alert("Llave copiada al portapapeles.");
+            alert("Llave copiada.");
         };
 
         init();
