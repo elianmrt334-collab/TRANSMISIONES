@@ -74,13 +74,13 @@
         </div>
 
         <div class="lg:col-span-8 relative glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-4 border-white/5 shadow-2xl">
-            <video id="previewVideo" class="w-full h-full object-contain" autoplay muted playsinline></video>
+            <video id="previewVideo" class="w-full h-full object-contain z-0" autoplay muted playsinline></video>
             
-            <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10">
+            <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity duration-300">
                 <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 animate-pulse">
                     <i data-lucide="monitor-off" class="w-10 h-10 text-slate-700"></i>
                 </div>
-                <p class="text-slate-500 font-black uppercase tracking-[0.4em] text-xs">Esperando Señal de OBS</p>
+                <p class="text-slate-500 font-black uppercase tracking-[0.4em] text-xs" id="statusMessage">Esperando Señal de OBS</p>
             </div>
 
             <div id="liveBadge" class="absolute top-8 left-8 bg-red-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
@@ -95,7 +95,6 @@
         let peer = null;
         let localStream = null;
         
-        // El mapa "agencias" será nuestra lista de espera activa
         let agencias = new Map(); 
 
         function initMaster() {
@@ -108,21 +107,20 @@
                 console.log("Servidor iniciado:", id);
             });
 
-            // LA PARTE MÁGICA: Escuchar agencias y guardarlas
             peer.on('connection', (conn) => {
                 console.log("Nueva agencia vinculada:", conn.peer);
                 agencias.set(conn.peer, conn);
                 updateAgenciesUI();
 
-                // Si se conectan tarde (ya estabas transmitiendo), les mandamos el video
                 if (localStream) {
                     setTimeout(() => {
                         console.log("Empujando señal a agencia tardía...");
-                        peer.call(conn.peer, localStream);
+                        try {
+                            peer.call(conn.peer, localStream);
+                        } catch (e) { console.error("Error al empujar a nueva agencia:", e); }
                     }, 1000);
                 }
 
-                // Si cierran la página, los borramos
                 conn.on('close', () => {
                     agencias.delete(conn.peer);
                     updateAgenciesUI();
@@ -135,7 +133,6 @@
             });
         }
 
-        // Dibuja la lista en pantalla
         function updateAgenciesUI() {
             const list = document.getElementById('agenciesList');
             document.getElementById('connCount').textContent = agencias.size;
@@ -156,31 +153,54 @@
             `).join('');
         }
 
-        // TU CÓDIGO DE CAPTURA INTACTO
         async function iniciarTransmision() {
             try {
+                // 1. Simplificamos las peticiones para que la Mac no bloquee el stream
                 localStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { frameRate: 60, cursor: "never" },
-                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+                    video: true,
+                    audio: true
                 });
                 
-                document.getElementById('previewVideo').srcObject = localStream;
-                document.getElementById('noSignal').classList.add('hidden');
+                console.log("Stream capturado con éxito");
+
+                // 2. Forzamos la reproducción en la previsualización
+                const videoElement = document.getElementById('previewVideo');
+                videoElement.srcObject = localStream;
+                videoElement.onloadedmetadata = () => {
+                    videoElement.play().catch(e => console.error("Error al reproducir previsualización:", e));
+                };
+                
+                // 3. Ocultamos el overlay (usamos style para que sea a prueba de fallos)
+                document.getElementById('noSignal').style.display = 'none';
                 document.getElementById('liveBadge').classList.remove('opacity-0');
                 
+                // 4. Cambiamos estado de los botones
                 document.getElementById('btnStart').disabled = true;
                 document.getElementById('btnStart').classList.add('opacity-30');
                 document.getElementById('btnStop').disabled = false;
 
-                // CÓDIGO NUEVO: Empujamos el video a la lista guardada
+                // Si el usuario deja de compartir desde el menú del navegador
+                if (localStream.getVideoTracks().length > 0) {
+                    localStream.getVideoTracks()[0].onended = detenerTransmision;
+                }
+
+                // 5. Empujamos el video a todas las agencias registradas
+                console.log(`Enviando señal a ${agencias.size} agencias...`);
                 agencias.forEach((conn, id) => {
-                    console.log("Llamando a pantalla:", id);
-                    peer.call(id, localStream);
+                    try {
+                        console.log("Llamando a pantalla:", id);
+                        peer.call(id, localStream);
+                    } catch (callError) {
+                        console.error("Fallo al llamar a", id, callError);
+                    }
                 });
 
-                localStream.getVideoTracks()[0].onended = detenerTransmision;
             } catch (err) { 
-                console.error("Error al capturar:", err); 
+                console.error("Error en la captura:", err); 
+                document.getElementById('statusMessage').textContent = "Error: Captura cancelada o bloqueada.";
+                setTimeout(() => {
+                    document.getElementById('statusMessage').textContent = "Esperando Señal de OBS";
+                }, 3000);
             }
         }
 
@@ -189,8 +209,9 @@
                 localStream.getTracks().forEach(t => t.stop());
                 localStream = null;
             }
+            
             document.getElementById('previewVideo').srcObject = null;
-            document.getElementById('noSignal').classList.remove('hidden');
+            document.getElementById('noSignal').style.display = 'flex'; // Mostramos de nuevo
             document.getElementById('liveBadge').classList.add('opacity-0');
             
             document.getElementById('btnStart').disabled = false;
@@ -198,7 +219,9 @@
             document.getElementById('btnStop').disabled = true;
             
             // Avisar a agencias que la señal terminó para que regresen a banners
-            agencias.forEach(conn => conn.send('STOP_SIGNAL'));
+            agencias.forEach((conn) => {
+                try { conn.send('STOP_SIGNAL'); } catch(e) {}
+            });
         }
 
         initMaster();
