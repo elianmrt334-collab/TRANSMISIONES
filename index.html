@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,18 +9,42 @@
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-action:disabled { opacity: 0.2; cursor: not-allowed; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #020617; 
+            color: white; 
+        }
+        .glass { 
+            background: rgba(15, 23, 42, 0.8); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        .btn-action { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .btn-action:hover:not(:disabled) { 
+            transform: translateY(-2px); 
+            filter: brightness(1.1); 
+        }
+        .btn-action:disabled { 
+            opacity: 0.2; 
+            cursor: not-allowed; 
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-6 lg:p-10">
 
-    <header class="flex justify-between items-center mb-10">
+    <!-- Encabezado de la Plataforma -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div class="flex items-center gap-5">
-            <div class="w-14 h-14 bg-[#158e45] rounded-2xl flex items-center justify-center shadow-2xl">
+            <div class="w-14 h-14 bg-[#158e45] rounded-2xl flex items-center justify-center shadow-2xl shadow-green-900/20">
                 <i data-lucide="layout-dashboard" class="text-white w-8 h-8"></i>
             </div>
             <div>
@@ -30,76 +53,127 @@
             </div>
         </div>
         
-        <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
-            <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-            <span class="text-[10px] font-black uppercase opacity-60">Sincronizando Nube...</span>
+        <div class="flex items-center gap-4">
+            <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
+                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando Nube...</span>
+            </div>
         </div>
     </header>
 
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Control Panel -->
+        <!-- Panel de Control (Izquierda) -->
         <div class="lg:col-span-4 space-y-6">
-            <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8">
-                <div class="space-y-4">
-                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">1. Fuente de Señal (OBS)</label>
-                    <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-slate-800 text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10">
-                        <i data-lucide="camera"></i> CAPTURAR VENTANA
-                    </button>
-                </div>
+            <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#158e45] to-transparent"></div>
+                
+                <div class="space-y-6">
+                    <h2 class="text-xl font-black uppercase tracking-tight text-slate-200 flex items-center gap-3">
+                        <i data-lucide="zap" class="text-[#158e45] w-5 h-5"></i>
+                        Gestión de Sesión
+                    </h2>
 
-                <div class="pt-6 border-t border-white/5 space-y-4">
-                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">2. Tiempo de Bloque</label>
-                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between">
-                        <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-16 outline-none">
-                        <span class="text-xs font-bold opacity-40">MINUTOS</span>
+                    <!-- 1. Captura de Fuente -->
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">1. Fuente de Video (OBS)</label>
+                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-slate-800 text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10 shadow-lg">
+                            <i data-lucide="camera"></i> CAPTURAR VENTANA
+                        </button>
                     </div>
-                </div>
 
-                <div class="pt-6 border-t border-white/5 space-y-4">
-                    <button id="btnStart" onclick="publishToCloud()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-4 shadow-xl disabled:opacity-20">
-                        <i data-lucide="send"></i> PUBLICAR SEÑAL
-                    </button>
-                    <button id="btnStop" onclick="stopBroadcast()" disabled class="w-full btn-action bg-red-600/10 text-red-500 py-4 rounded-2xl font-black text-xs border border-red-500/20">
-                        FINALIZAR TRANSMISIÓN
-                    </button>
+                    <!-- 2. Parámetros -->
+                    <div class="pt-6 border-t border-white/5 space-y-4">
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">2. Parámetros de Bloque</label>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-bold text-slate-500 uppercase">Tiempo de Partido</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-16 outline-none">
+                                        <span class="text-[10px] font-bold opacity-40">MIN</span>
+                                    </div>
+                                </div>
+                                <i data-lucide="timer" class="text-slate-700 w-8 h-8"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Acciones -->
+                    <div class="pt-6 border-t border-white/5 space-y-4">
+                        <button id="btnStart" onclick="publishToCloud()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-4 shadow-xl shadow-green-900/20 disabled:opacity-20">
+                            <i data-lucide="send"></i> PUBLICAR SEÑAL
+                        </button>
+                        <button id="btnStop" onclick="stopBroadcast()" disabled class="w-full btn-action bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white py-4 rounded-2xl font-black text-xs border border-red-500/20 disabled:opacity-20">
+                            FINALIZAR TRANSMISIÓN
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Online Agencies -->
+            <!-- Monitor de Agencias Conectadas -->
             <div class="glass p-6 rounded-[2rem] space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500">Agencias Online</h3>
-                    <span id="agenciesCount" class="text-[#158e45] font-black text-xs">0</span>
+                <div class="flex justify-between items-center px-2">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500">Agencias en Línea</h3>
+                    <span id="agenciesCount" class="bg-[#158e45] text-white text-[10px] px-2 py-0.5 rounded-full font-black">0</span>
                 </div>
-                <div id="agenciesList" class="space-y-2 max-h-[150px] overflow-y-auto">
-                    <!-- Dinámico -->
+                <div id="agenciesList" class="space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar">
+                    <div class="text-center py-6 opacity-20">
+                        <i data-lucide="loader-2" class="w-6 h-6 mx-auto animate-spin mb-2"></i>
+                        <span class="text-[9px] font-bold uppercase">Esperando pantallas...</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Monitor -->
-        <div class="lg:col-span-8 relative glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-[8px] border-white/5 shadow-2xl">
-            <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
-            <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity">
-                <i data-lucide="video-off" class="w-12 h-12 text-slate-800 mb-4"></i>
-                <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Monitor de Salida</p>
+        <!-- Monitor Maestro (Derecha) -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            <div class="relative flex-1 glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-[8px] border-white/5 shadow-2xl">
+                <!-- Previsualización de la señal que se envía -->
+                <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
+                
+                <!-- Estado de No Señal -->
+                <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity duration-700">
+                    <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                        <i data-lucide="video-off" class="w-10 h-10 text-slate-800"></i>
+                    </div>
+                    <p class="text-slate-600 font-black uppercase tracking-[0.5em] text-xs">Monitor de Salida</p>
+                </div>
+
+                <!-- Badge de En Vivo -->
+                <div id="onAirBadge" class="absolute top-8 left-8 bg-red-600 px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-black uppercase tracking-widest italic">Live Platform</span>
+                </div>
             </div>
-            <div id="onAirBadge" class="absolute top-8 left-8 bg-red-600 px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
-                <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <span class="text-xs font-black uppercase tracking-widest italic">Live Platform</span>
+
+            <!-- Tips e Información -->
+            <div class="glass p-6 rounded-3xl flex items-center justify-between border-l-8 border-blue-500">
+                <div class="flex items-center gap-4">
+                    <i data-lucide="info" class="text-blue-500 w-6 h-6"></i>
+                    <div>
+                        <p class="text-xs font-black uppercase">Instrucción para OBS</p>
+                        <p class="text-[10px] text-slate-400">Click derecho en Vista Previa > Proyector de Ventana > Capturar en esta plataforma.</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] font-black text-slate-500 uppercase">Localización Master</p>
+                    <p class="text-xs font-bold text-white uppercase">Esquipulas, GT</p>
+                </div>
             </div>
         </div>
     </main>
 
     <script type="module">
+        // Importación de Firebase desde CDN (Versión 11)
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getFirestore, doc, setDoc, onSnapshot, collection, query } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 
         lucide.createIcons();
 
+        // 1. Configuración de Firebase y Variables Globales
         const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-coosajo';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-broadcast-system';
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -108,49 +182,99 @@
         const preview = document.getElementById('preview');
         let localStream = null;
         let peer = null;
+        let user = null;
 
+        // 2. Autenticación y Escucha de Agencias
         const init = async () => {
-            await signInAnonymously(auth);
-            document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase opacity-60">Nube Activa</span>`;
-            
-            peer = new Peer(MASTER_ID);
-            peer.on('call', (call) => {
-                if (localStream) call.answer(localStream);
-            });
+            try {
+                // REGLA 3: Auth antes de cualquier operación de Firestore
+                await signInAnonymously(auth);
+                onAuthStateChanged(auth, (u) => {
+                    user = u;
+                    if (u) {
+                        document.getElementById('cloudStatus').innerHTML = `
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-[10px] font-black uppercase opacity-60">Nube Conectada</span>
+                        `;
+                        iniciarPeer();
+                        escucharPantallasOnline();
+                    }
+                });
+            } catch (e) { console.error("Error de autenticación:", e); }
+        };
 
-            // Escuchar agencias conectadas
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'screens'));
-            onSnapshot(q, (snapshot) => {
+        // 3. Inicializar PeerJS (El "Túnel" de video)
+        const iniciarPeer = () => {
+            peer = new Peer(MASTER_ID);
+            peer.on('open', (id) => {
+                console.log("Servidor PeerJS abierto:", id);
+            });
+            peer.on('call', (call) => {
+                if (localStream) {
+                    console.log("Enviando señal a agencia solicitante...");
+                    call.answer(localStream);
+                }
+            });
+            peer.on('error', (err) => console.log("PeerJS Error:", err));
+        };
+
+        // 4. Monitoreo de Agencias via Firestore
+        const escucharPantallasOnline = () => {
+            if (!user) return;
+            // REGLA 1: Ruta estricta de colección pública
+            const screensRef = collection(db, 'artifacts', appId, 'public', 'data', 'screens');
+            onSnapshot(query(screensRef), (snapshot) => {
                 const screens = snapshot.docs.map(doc => doc.data());
-                document.getElementById('agenciesCount').textContent = screens.length;
-                document.getElementById('agenciesList').innerHTML = screens.map(s => `
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
-                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span class="text-[10px] font-black uppercase opacity-60">${s.name}</span>
-                    </div>
-                `).join('');
+                updateAgenciesUI(screens);
             });
         };
 
+        const updateAgenciesUI = (screens) => {
+            const list = document.getElementById('agenciesList');
+            document.getElementById('agenciesCount').textContent = screens.length;
+            
+            if (screens.length === 0) {
+                list.innerHTML = '<p class="text-[10px] opacity-20 italic text-center py-6">Sin agencias conectadas</p>';
+                return;
+            }
+
+            list.innerHTML = screens.map(s => `
+                <div class="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.4)]"></div>
+                        <span class="text-[10px] font-black uppercase opacity-80">${s.name || 'Agencia'}</span>
+                    </div>
+                    <span class="text-[8px] font-bold opacity-30 uppercase tracking-tighter">Sincronizado</span>
+                </div>
+            `).join('');
+        };
+
+        // 5. Funciones de Control (Window para acceso desde el HTML)
         window.startCapture = async () => {
             try {
                 localStream = await navigator.mediaDevices.getDisplayMedia({
                     video: { frameRate: 60, cursor: "never" },
-                    audio: { echoCancellation: false, noiseSuppression: false }
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
                 });
                 preview.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('opacity-0');
                 document.getElementById('btnStart').disabled = false;
-            } catch (e) { console.error(e); }
+                document.getElementById('btnCapture').classList.add('opacity-30');
+
+                // Si dejas de compartir desde el botón nativo de Chrome
+                localStream.getVideoTracks()[0].onended = () => window.stopBroadcast();
+            } catch (e) { console.error("Error al capturar OBS:", e); }
         };
 
         window.publishToCloud = async () => {
+            if (!user) return;
             const duration = document.getElementById('matchTime').value;
-            // Publicar el estado en Firebase
+            
+            // REGLA 1: Publicar estado en ruta estricta
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'platformState'), {
                 isLive: true,
                 masterId: MASTER_ID,
-                duration: parseInt(duration),
+                matchDuration: parseInt(duration),
                 startTime: Date.now()
             });
 
@@ -160,14 +284,22 @@
         };
 
         window.stopBroadcast = async () => {
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'platformState'), { isLive: false });
-            if (localStream) localStream.getTracks().forEach(t => t.stop());
-            location.reload();
+            if (!user) return;
+            // Notificar a Firebase que el live terminó
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'platformState'), {
+                isLive: false
+            });
+            
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+            
+            setTimeout(() => location.reload(), 800);
         };
 
+        // Iniciar plataforma
         init();
     </script>
 </body>
 </html>
-
-```
