@@ -3,142 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesa Técnica - COOSAJO Master</title>
+    <title>Mesa Técnica Maestra - COOSAJO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .is-active { background-color: #22c55e; box-shadow: 0 0 15px #22c55e; }
-        .is-inactive { background-color: #ef4444; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .btn-green { background-color: #158e45; transition: all 0.3s; }
+        .btn-green:hover { background-color: #117036; transform: translateY(-2px); }
     </style>
 </head>
-<body class="p-8 flex flex-col min-h-screen">
-    <header class="flex justify-between items-center bg-slate-800 p-6 rounded-3xl mb-8 border border-white/10 shadow-2xl">
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header similar a las pantallas -->
+    <header class="h-[100px] bg-white border-b-[6px] border-[#158e45] flex items-center justify-between px-10 shadow-md">
         <div class="flex items-center gap-4">
-            <img src="LOGO COOSAJO SIN ESLOGAN.png" class="h-12" onerror="this.src='https://placehold.co/200x50?text=COOSAJO'">
-            <div>
-                <h1 class="text-xl font-black uppercase tracking-tight text-white">Mesa Técnica Master</h1>
-                <p class="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <span id="statusIndicator" class="status-dot is-inactive"></span>
-                    ESTADO: <span id="masterStatus" class="text-red-400">DESCONECTADO</span>
-                </p>
-            </div>
+            <img src="LOGO COOSAJO SIN ESLOGAN.png" class="h-16" onerror="this.src='https://placehold.co/150x60?text=COOSAJO'">
+            <h1 class="text-2xl font-black text-[#172e59] uppercase italic tracking-tighter">Mesa Técnica Maestra</h1>
         </div>
-        <div class="flex items-center gap-2 bg-blue-500/10 text-blue-400 px-4 py-2 rounded-xl border border-blue-500/20">
-            <i data-lucide="info" class="w-4 h-4"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest text-center">Canal: COOSAJO-MASTER-MAGIC</span>
+        <div class="flex items-center gap-4">
+            <div id="statusId" class="px-4 py-2 rounded-full bg-slate-100 border text-xs font-bold text-slate-500 uppercase tracking-widest">
+                ID Conexión: COOSAJO-MASTER-EL-MAGIC
+            </div>
         </div>
     </header>
 
-    <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-black rounded-[2.5rem] overflow-hidden border-4 border-slate-700 relative aspect-video flex items-center justify-center shadow-2xl">
-            <video id="localVideo" class="w-full h-full object-contain" autoplay muted playsinline></video>
-            <div id="noVideo" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 bg-slate-900/50">
-                <i data-lucide="monitor-play" class="w-16 h-16 mb-4 opacity-20"></i>
-                <span class="font-bold uppercase text-sm tracking-widest text-center px-8">Monitor de Salida</span>
+    <main class="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Panel de Control Izquierdo -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="glass p-8 rounded-[2rem] shadow-xl border border-white space-y-8">
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">1. Configurar Tiempo de Bloque</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="matchMinutes" value="15" class="w-full bg-slate-100 border-none rounded-xl p-4 text-2xl font-black text-[#172e59] focus:ring-2 focus:ring-[#158e45]">
+                        <span class="font-bold text-slate-400 uppercase text-xs">Minutos</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">2. Acciones de Transmisión</label>
+                    
+                    <button onclick="capturarPantalla()" id="btnCapture" class="w-full bg-slate-800 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-black transition-all">
+                        <i data-lucide="monitor"></i> CAPTURAR OBS / STICK
+                    </button>
+
+                    <button onclick="iniciarTransmision()" id="btnStart" disabled class="w-full btn-green text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-3 shadow-lg shadow-green-200 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <i data-lucide="play"></i> INICIAR TRANSMISIÓN
+                    </button>
+
+                    <button onclick="detenerTransmision()" id="btnStop" disabled class="w-full bg-red-500 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-red-700 transition-all disabled:opacity-30">
+                        <i data-lucide="square"></i> FINALIZAR TODO
+                    </button>
+                </div>
+
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                    <p class="text-[10px] text-amber-700 font-bold leading-tight flex gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                        RECUERDE: Al capturar la pantalla en el navegador, debe marcar la casilla "Compartir audio del sistema" para que se escuche en las agencias.
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="flex flex-col gap-6">
-            <div class="bg-white/5 p-8 rounded-[2rem] border border-white/10 backdrop-blur-sm h-full flex flex-col justify-center">
-                <h3 class="text-xs font-black uppercase text-blue-400 mb-8 tracking-[0.2em] text-center">Panel de Control de Señal</h3>
+        <!-- Monitor de Previsualización -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="relative w-full aspect-video bg-black rounded-[2rem] overflow-hidden shadow-2xl border-[10px] border-white">
+                <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
                 
-                <div class="flex flex-col gap-4">
-                    <button id="btnStart" onclick="iniciarEmision()" class="group w-full bg-green-600 hover:bg-green-500 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-4">
-                        <i data-lucide="play-circle" class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
-                        <span>Iniciar Transmisión</span>
-                    </button>
-
-                    <button id="btnStop" onclick="finalizarEmision()" disabled class="group w-full bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-4">
-                        <i data-lucide="stop-circle" class="w-8 h-8 group-hover:scale-110 transition-transform"></i>
-                        <span>Finalizar Transmisión</span>
-                    </button>
+                <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 bg-slate-900">
+                    <i data-lucide="clapperboard" class="w-16 h-16 mb-4 opacity-20"></i>
+                    <p class="font-black uppercase tracking-[0.3em] opacity-30 text-sm">Esperando señal de captura</p>
                 </div>
 
-                <div class="mt-8 p-6 bg-slate-900/50 rounded-2xl border border-white/5">
-                    <h4 class="text-[10px] font-black uppercase text-slate-400 mb-2">Instrucciones de Uso:</h4>
-                    <p class="text-[10px] text-slate-300 uppercase leading-relaxed">
-                        1. Al "Iniciar", selecciona la ventana de tu <strong>"Magic Stick" u OBS</strong>.<br>
-                        2. Marca <strong>"Compartir audio del sistema"</strong>.<br>
-                        3. Las agencias conectarán automáticamente.<br>
-                        4. Usa "Finalizar" para liberar la cámara y cerrar la señal en agencias.
-                    </p>
+                <div id="liveBadge" class="absolute top-6 left-6 bg-red-600 text-white px-4 py-2 rounded-lg font-black text-xs uppercase tracking-widest flex items-center gap-2 opacity-0 transition-opacity">
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div> EN VIVO
                 </div>
+            </div>
+
+            <div class="flex justify-between items-center px-4">
+                <div class="flex items-center gap-3">
+                    <div id="statusDot" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span id="statusText" class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sistema Desconectado</span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase">COOSAJO R.L. © 2026</div>
             </div>
         </div>
     </main>
 
     <script>
         lucide.createIcons();
-        let localStream;
-        let peer;
+        const preview = document.getElementById('preview');
+        const btnCapture = document.getElementById('btnCapture');
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const matchInput = document.getElementById('matchMinutes');
         
+        let peer = null;
+        let localStream = null;
+        let connections = [];
+
+        // Inicializar PeerJS con ID Fijo para las Agencias
         function initPeer() {
+            peer = new Peer('COOSAJO-MASTER-EL-MAGIC');
+
+            peer.on('open', (id) => {
+                document.getElementById('statusDot').className = "w-3 h-3 bg-green-500 rounded-full";
+                document.getElementById('statusText').textContent = "Sistema Listo para Transmitir";
+            });
+
+            peer.on('connection', (conn) => {
+                // Si una agencia se conecta por datos, guardamos la conexión
+                connections.push(conn);
+            });
+
+            peer.on('call', (call) => {
+                // Si ya estamos transmitiendo, contestamos automáticamente a las nuevas pantallas
+                if (localStream) {
+                    call.answer(localStream);
+                }
+            });
+
+            peer.on('error', (err) => {
+                if(err.type === 'unavailable-id') {
+                    alert("¡Error! Ya hay otra Mesa Técnica abierta con este ID. Ciérrela antes de continuar.");
+                }
+            });
+        }
+
+        async function capturarPantalla() {
             try {
-                peer = new Peer('COOSAJO-MASTER-MAGIC');
+                localStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { frameRate: 60, cursor: "never" },
+                    audio: { echoCancellation: false, noiseSuppression: false }
+                });
                 
-                peer.on('open', () => {
-                    document.getElementById('masterStatus').textContent = 'LISTO PARA EMITIR';
-                    document.getElementById('masterStatus').className = 'text-green-400';
-                });
+                preview.srcObject = localStream;
+                document.getElementById('noSignal').classList.add('hidden');
+                btnStart.disabled = false;
+                btnCapture.classList.add('opacity-50');
 
-                peer.on('call', (call) => {
-                    if (localStream) {
-                        call.answer(localStream);
-                        console.log("Nueva agencia conectada");
-                    }
-                });
+                // Si el usuario deja de compartir desde el botón del navegador
+                localStream.getVideoTracks()[0].onended = detenerTransmision;
 
-                peer.on('error', (err) => {
-                    console.error("PeerJS Error:", err);
-                    document.getElementById('masterStatus').textContent = 'ERROR DE RED';
-                    document.getElementById('masterStatus').className = 'text-red-500';
-                });
-            } catch (e) {
-                console.error("Error inicializando Peer:", e);
+            } catch (err) {
+                console.error("Error al capturar pantalla:", err);
             }
         }
 
-        async function iniciarEmision() {
-            try {
-                localStream = await navigator.mediaDevices.getDisplayMedia({ 
-                    video: { frameRate: 60, cursor: 'never' }, 
-                    audio: { echoCancellation: false, noiseSuppression: false } 
+        function iniciarTransmision() {
+            if (!localStream) return;
+
+            const totalMinutos = matchInput.value;
+            
+            // Avisar a todas las pantallas conectadas que el partido empieza
+            connections.forEach(conn => {
+                conn.send({
+                    type: 'START_MATCH',
+                    duration: totalMinutos
                 });
-                
-                document.getElementById('localVideo').srcObject = localStream;
-                document.getElementById('noVideo').classList.add('hidden');
-                document.getElementById('masterStatus').textContent = 'SEÑAL ACTIVA';
-                document.getElementById('statusIndicator').classList.remove('is-inactive');
-                document.getElementById('statusIndicator').classList.add('is-active');
-                
-                document.getElementById('btnStart').disabled = true;
-                document.getElementById('btnStop').disabled = false;
+            });
 
-                // Si se corta la captura manualmente desde el navegador
-                localStream.getVideoTracks()[0].onended = () => finalizarEmision();
-
-            } catch (e) { console.error("Error capturando pantalla:", e); }
+            document.getElementById('liveBadge').classList.remove('opacity-0');
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+            
+            // Bloqueamos el input durante la transmisión
+            matchInput.disabled = true;
         }
 
-        function finalizarEmision() {
+        function detenerTransmision() {
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
             
-            document.getElementById('localVideo').srcObject = null;
-            document.getElementById('noVideo').classList.remove('hidden');
-            document.getElementById('masterStatus').textContent = 'TRANSMISIÓN FINALIZADA';
-            document.getElementById('masterStatus').className = 'text-yellow-400';
-            document.getElementById('statusIndicator').classList.remove('is-active');
-            document.getElementById('statusIndicator').classList.add('is-inactive');
+            preview.srcObject = null;
+            document.getElementById('noSignal').classList.remove('hidden');
+            document.getElementById('liveBadge').classList.add('opacity-0');
             
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled = true;
+            btnStart.disabled = true;
+            btnStop.disabled = true;
+            btnCapture.classList.remove('opacity-50');
+            matchInput.disabled = false;
+
+            // Avisar a pantallas que cortamos señal
+            connections.forEach(conn => {
+                conn.send({ type: 'STOP_ALL' });
+            });
         }
 
         initPeer();
