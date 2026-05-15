@@ -14,8 +14,8 @@
         .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
         .btn-action:active:not(:disabled) { transform: scale(0.95); }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .input-key { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
+        .input-key:focus { border-color: #158e45; outline: none; box-shadow: 0 0 15px rgba(21, 142, 69, 0.2); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-6 lg:p-10">
@@ -24,126 +24,122 @@
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div class="flex items-center gap-5">
             <div class="w-14 h-14 bg-[#158e45] rounded-2xl flex items-center justify-center shadow-2xl shadow-green-900/40">
-                <i data-lucide="layout-dashboard" class="text-white w-8 h-8"></i>
+                <i data-lucide="radio" class="text-white w-8 h-8"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-black uppercase tracking-tighter italic italic">Control Center</h1>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Broadcast Platform v3.0</p>
+                <h1 class="text-3xl font-black uppercase tracking-tighter italic italic">Broadcaster Center</h1>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Cloud Platform v4.0</p>
             </div>
         </div>
         
-        <div class="flex items-center gap-4 bg-slate-900/50 p-2 rounded-2xl border border-white/5">
-            <div id="dbStatus" class="flex items-center gap-3 px-4 py-2 bg-black/40 rounded-xl border border-white/5">
+        <div class="flex items-center gap-4">
+            <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
                 <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando Nube...</span>
-            </div>
-            <div id="peerStatus" class="flex items-center gap-3 px-4 py-2 bg-black/40 rounded-xl border border-white/5">
-                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span class="text-[10px] font-black uppercase opacity-60">Signal Offline</span>
+                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando...</span>
             </div>
         </div>
     </header>
 
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Panel de Control (Izquierda) -->
+        <!-- Panel de Control de Transmisión -->
         <div class="lg:col-span-4 space-y-6">
             <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#158e45] to-transparent"></div>
                 
                 <div class="space-y-6">
                     <h2 class="text-xl font-black uppercase tracking-tight text-slate-200 flex items-center gap-3">
-                        <i data-lucide="zap" class="text-[#158e45] w-5 h-5"></i>
-                        Gestión de Sesión
+                        <i data-lucide="key" class="text-[#158e45] w-5 h-5"></i>
+                        Llave de Emisión
                     </h2>
 
-                    <!-- 1. Captura de Fuente -->
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">1. Fuente de Video (OBS/Stick)</label>
-                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-slate-800 text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10 shadow-lg">
-                            <i data-lucide="camera"></i> CAPTURAR VENTANA
-                        </button>
-                    </div>
+                    <!-- Configuración de Llave -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest block mb-2">Llave Maestra de Transmisión</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="streamKey" value="COOSAJO-LIVE-ELIAN" class="flex-1 input-key rounded-xl px-4 py-3 font-mono text-sm text-[#158e45] font-bold">
+                                <button onclick="copyKey()" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                    <!-- 2. Configuración -->
-                    <div class="pt-6 border-t border-white/5 space-y-4">
-                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">2. Parámetros de Plataforma</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                                <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Duración Partido</span>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-16 outline-none">
-                                    <span class="text-[10px] font-bold opacity-40">MIN</span>
-                                </div>
-                            </div>
-                            <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                                <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Modo Salida</span>
-                                <span class="text-xs font-black text-blue-400 uppercase">Directo P2P</span>
-                            </div>
+                        <div class="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
+                            <p class="text-[10px] text-blue-400 leading-relaxed italic">
+                                * Esta llave vincula tu OBS con todas las agencias. No la compartas fuera de COOSAJO.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- 3. Acciones Globales -->
-                    <div class="pt-6 border-t border-white/5 grid grid-cols-1 gap-4">
-                        <button id="btnStart" onclick="broadcastStart()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-4 shadow-xl shadow-green-900/20 disabled:opacity-20">
-                            <i data-lucide="send"></i> PUBLICAR SEÑAL
-                        </button>
-                        <button id="btnStop" onclick="broadcastStop()" disabled class="w-full btn-action bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white py-4 rounded-2xl font-black text-sm border border-red-500/20 disabled:opacity-20">
-                            <i data-lucide="power"></i> FINALIZAR TODO
+                    <!-- Fuente de Video -->
+                    <div class="pt-6 border-t border-white/5 space-y-4">
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest block">Fuente de Captura (OBS)</label>
+                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10">
+                            <i data-lucide="monitor"></i> SELECCIONAR PROYECTOR OBS
                         </button>
                     </div>
-                </div>
-            </div>
 
-            <!-- Monitor de Agencias -->
-            <div class="glass p-6 rounded-[2rem] space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500">Pantallas Activas</h3>
-                    <span id="agenciesCount" class="text-[#158e45] font-black text-xs">0</span>
-                </div>
-                <div id="agenciesList" class="space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar">
-                    <div class="text-center py-4 opacity-20">
-                        <i data-lucide="loader-2" class="w-6 h-6 mx-auto animate-spin mb-2"></i>
-                        <span class="text-[9px] font-bold uppercase">Esperando pantallas...</span>
+                    <!-- Parámetros -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Corte Ads</span>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-12 outline-none">
+                                <span class="text-[10px] font-bold opacity-30">MIN</span>
+                            </div>
+                        </div>
+                        <div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex flex-col justify-center">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Estado Red</span>
+                            <span id="networkTag" class="text-[10px] font-black text-blue-400 uppercase">Standby</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Acción -->
+                    <div class="pt-6 border-t border-white/5">
+                        <button id="btnStart" onclick="publishStream()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 shadow-xl shadow-green-900/20 disabled:opacity-20">
+                            <i data-lucide="broadcast"></i> PUBLICAR SEÑAL
+                        </button>
+                        <button id="btnStop" onclick="stopStream()" disabled class="w-full btn-action mt-4 bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white py-4 rounded-2xl font-black text-xs border border-red-500/20 disabled:opacity-20">
+                            FINALIZAR TRANSMISIÓN
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Monitor Maestro (Derecha) -->
+        <!-- Monitor de Previsualización -->
         <div class="lg:col-span-8 flex flex-col gap-6">
             <div class="relative flex-1 glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-[8px] border-white/5 shadow-2xl">
                 <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
                 
                 <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity duration-700">
-                    <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                        <i data-lucide="video-off" class="w-10 h-10 text-slate-800"></i>
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="video-off" class="w-8 h-8 text-slate-700"></i>
                     </div>
-                    <p class="text-slate-600 font-black uppercase tracking-[0.5em] text-xs">Monitor de Salida</p>
+                    <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Monitor de Pre-Emisión</p>
                 </div>
 
-                <!-- HUD Master -->
-                <div id="masterHud" class="absolute top-8 left-8 right-8 flex justify-between items-start pointer-events-none opacity-0 transition-opacity">
-                    <div class="bg-red-600 px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-2xl border border-red-400/20">
-                        <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        <span class="text-[10px] font-black uppercase tracking-widest">Transmitiendo en Vivo</span>
-                    </div>
-                    <div class="bg-black/60 backdrop-blur-md px-5 py-2.5 rounded-xl border border-white/10">
-                        <span id="matchClock" class="text-xl font-black font-mono">15:00</span>
-                    </div>
+                <!-- On Air Badge -->
+                <div id="onAirBadge" class="absolute top-8 left-8 bg-red-600 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
+                    <div class="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
+                    <span class="text-xs font-black uppercase tracking-widest">AL AIRE - AGENCIAS CONECTADAS</span>
                 </div>
             </div>
 
-            <!-- Info de OBS -->
-            <div class="glass p-6 rounded-3xl flex items-center justify-between border-l-8 border-blue-500">
-                <div class="flex items-center gap-4">
-                    <i data-lucide="info" class="text-blue-500 w-6 h-6"></i>
-                    <div>
-                        <p class="text-xs font-black uppercase">Instrucción para OBS</p>
-                        <p class="text-[10px] text-slate-400">Click derecho en Vista Previa > Proyector de Ventana > Capturar en esta plataforma.</p>
+            <!-- Listado de Agencias (Feedback) -->
+            <div class="glass p-6 rounded-3xl flex items-center justify-between">
+                <div class="flex items-center gap-8">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Espectadores</span>
+                        <span id="agenciesCount" class="text-2xl font-black text-[#158e45]">0</span>
+                    </div>
+                    <div id="agenciesList" class="flex gap-2 overflow-x-auto max-w-md">
+                        <!-- Pantallas dinámicas -->
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="copiarLink()" class="bg-blue-600/20 text-blue-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">Copiar URL Agencias</button>
+                <div class="text-right">
+                    <p class="text-[9px] font-black text-slate-500 uppercase">Localización Master</p>
+                    <p class="text-xs font-bold text-white">Esquipulas, Chiquimula</p>
                 </div>
             </div>
         </div>
@@ -156,76 +152,52 @@
 
         lucide.createIcons();
 
-        // 1. Configuración de Plataforma (Globales provistos por entorno)
+        // 1. Init Firebase (Usa los valores automáticos del entorno)
         const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-platform';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-platform-key';
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const MASTER_ID = 'COOSAJO-MASTER-SYSTEM';
         const preview = document.getElementById('preview');
         let localStream = null;
         let peer = null;
         let user = null;
-        let screens = [];
+        let activeScreens = [];
 
-        // 2. Autenticación y Sincronización Inicial
-        const initPlatform = async () => {
+        // 2. Auth & Cloud Listeners
+        const init = async () => {
             try {
                 await signInAnonymously(auth);
                 onAuthStateChanged(auth, (u) => {
                     user = u;
                     if (u) {
-                        document.getElementById('dbStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase opacity-60">Nube Conectada</span>`;
-                        iniciarPeer();
-                        escucharPantallas();
+                        document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase">Nube Lista</span>`;
+                        listenToAgencies();
                     }
                 });
-            } catch (e) { console.error("Error Auth:", e); }
+            } catch (e) { console.error(e); }
         };
 
-        // 3. Sistema de Red P2P (Señalización)
-        const iniciarPeer = () => {
-            peer = new Peer(MASTER_ID);
-            peer.on('open', (id) => {
-                document.getElementById('peerStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase opacity-60">Ready</span>`;
-            });
-            peer.on('call', (call) => {
-                if (localStream) call.answer(localStream);
-            });
-            peer.on('error', (err) => console.log("Peer Error:", err));
-        };
-
-        // 4. Monitorear Pantallas Activas via Firestore
-        const escucharPantallas = () => {
-            if (!user) return;
+        const listenToAgencies = () => {
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'screens'));
             onSnapshot(q, (snapshot) => {
-                screens = snapshot.docs.map(doc => doc.data());
-                actualizarListaAgencias();
+                activeScreens = snapshot.docs.map(doc => doc.data());
+                updateUI();
             });
         };
 
-        const actualizarListaAgencias = () => {
+        const updateUI = () => {
+            document.getElementById('agenciesCount').textContent = activeScreens.length;
             const list = document.getElementById('agenciesList');
-            document.getElementById('agenciesCount').textContent = screens.length;
-            if (screens.length === 0) {
-                list.innerHTML = '<p class="text-[10px] opacity-30 italic text-center py-4">Esperando pantallas...</p>';
-                return;
-            }
-            list.innerHTML = screens.map(s => `
-                <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 ${s.isLive ? 'bg-green-500 animate-pulse' : 'bg-blue-500'} rounded-full"></div>
-                        <span class="text-[10px] font-black uppercase opacity-80">${s.name || 'Agencia'}</span>
-                    </div>
-                    <span class="text-[8px] font-bold opacity-30">${s.id.substring(0,6)}</span>
+            list.innerHTML = activeScreens.map(s => `
+                <div class="bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap">
+                    <span class="text-[9px] font-black uppercase opacity-60">${s.name || 'Agencia'}</span>
                 </div>
             `).join('');
         };
 
-        // 5. Funciones de Producción
+        // 3. Captura y Streaming
         window.startCapture = async () => {
             try {
                 localStream = await navigator.mediaDevices.getDisplayMedia({
@@ -235,41 +207,54 @@
                 preview.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('opacity-0');
                 document.getElementById('btnStart').disabled = false;
-                document.getElementById('btnCapture').classList.add('opacity-30');
+                
+                // Init Peer con la Llave ingresada
+                const key = document.getElementById('streamKey').value;
+                peer = new Peer(key);
+                peer.on('open', () => {
+                    document.getElementById('networkTag').textContent = "Server Online";
+                });
+                peer.on('call', (call) => {
+                    if (localStream) call.answer(localStream);
+                });
+
+                localStream.getVideoTracks()[0].onended = broadcastStop;
             } catch (e) { console.error(e); }
         };
 
-        window.broadcastStart = async () => {
+        window.publishStream = async () => {
             if (!user) return;
+            const key = document.getElementById('streamKey').value;
             const duration = document.getElementById('matchTime').value;
-            
-            // Publicar el "Estado de la Plataforma" en la nube
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'platformState'), {
+
+            // Notificar a la nube que la transmisión está activa para esta llave
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
                 isLive: true,
+                streamKey: key,
                 matchDuration: parseInt(duration),
-                startTime: Date.now(),
-                masterPeerId: MASTER_ID
+                startTime: Date.now()
             });
 
-            document.getElementById('masterHud').classList.remove('opacity-0');
+            document.getElementById('onAirBadge').classList.remove('opacity-0');
             document.getElementById('btnStart').disabled = true;
             document.getElementById('btnStop').disabled = false;
         };
 
         window.broadcastStop = async () => {
             if (!user) return;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'platformState'), {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
                 isLive: false
             });
             setTimeout(() => location.reload(), 1000);
         };
 
-        window.copiarLink = () => {
-            navigator.clipboard.writeText(window.location.href.replace('mesa_maestra.html', 'index.html'));
-            alert("Enlace de agencias copiado. Pégalo en las pantallas.");
+        window.copyKey = () => {
+            const val = document.getElementById('streamKey').value;
+            navigator.clipboard.writeText(val);
+            alert("Llave copiada al portapapeles.");
         };
 
-        initPlatform();
+        init();
     </script>
 </body>
 </html>
