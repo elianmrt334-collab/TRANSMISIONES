@@ -3,305 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesa Técnica - COOSAJO Broadcast Platform</title>
+    <title>Mesa Técnica - COOSAJO Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-action:active:not(:disabled) { transform: scale(0.95); }
-        .input-key { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
-        .input-key:focus { border-color: #158e45; outline: none; box-shadow: 0 0 15px rgba(21, 142, 69, 0.2); }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        
-        .mac-card { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%); }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-6 lg:p-10">
+<body class="min-h-screen flex flex-col p-8">
 
-    <!-- Header Plataforma -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div class="flex items-center gap-5">
-            <div class="w-14 h-14 bg-[#158e45] rounded-2xl flex items-center justify-center shadow-2xl shadow-green-900/40">
-                <i data-lucide="radio" class="text-white w-8 h-8"></i>
+    <header class="flex justify-between items-center mb-12">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-[#158e45] rounded-xl flex items-center justify-center shadow-lg">
+                <i data-lucide="radio" class="text-white w-7 h-7"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-black uppercase tracking-tighter italic">Broadcaster Center</h1>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Cloud Platform v4.2 (Mac Enhanced)</p>
+                <h1 class="text-2xl font-black uppercase tracking-tighter italic">Mesa Técnica Master</h1>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">COOSAJO R.L. es MICOOPE</p>
             </div>
         </div>
-        
         <div class="flex items-center gap-4">
-            <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
-                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando Nube...</span>
+            <div id="spectators" class="glass px-4 py-2 rounded-xl flex items-center gap-2 border-green-500/20">
+                <i data-lucide="users" class="w-4 h-4 text-[#158e45]"></i>
+                <span id="connCount" class="text-sm font-black text-green-400">0 pantallas</span>
+            </div>
+            <div class="glass px-6 py-3 rounded-2xl flex items-center gap-3">
+                <div id="statusDot" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span id="statusLabel" class="text-sm font-black uppercase tracking-widest">Desconectado</span>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Panel de Control -->
-        <div class="lg:col-span-4 space-y-6">
-            
-            <!-- Diagnóstico Mac -->
-            <div class="glass p-6 rounded-[2rem] border-l-4 border-blue-500 mac-card">
-                <div class="flex items-center gap-3 mb-4">
-                    <i data-lucide="apple" class="text-blue-400 w-5 h-5"></i>
-                    <h3 class="text-sm font-black uppercase tracking-widest text-blue-400">Guía para Mac de Elián</h3>
-                </div>
-                <div class="space-y-3 text-[11px] text-slate-300">
-                    <div class="flex gap-3">
-                        <span class="bg-blue-500/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0">1</span>
-                        <p>Si no ves la ventana de OBS: **Reinicia Chrome** (Cmd+Q) para refrescar los permisos de grabación.</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="bg-blue-500/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0">2</span>
-                        <p>En OBS: Clic derecho en la escena > **Proyector de ventana (Previsualización)**. No la minimices.</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="bg-blue-500/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0">3</span>
-                        <p>Al capturar: Si no sale la ventana individual, usa **"Pantalla completa"** y deja OBS a la vista.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#158e45] to-transparent"></div>
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1 space-y-6">
+            <div class="glass p-8 rounded-[2.5rem] space-y-8 border-t-4 border-[#158e45] shadow-2xl">
+                <h2 class="text-xl font-black uppercase tracking-tight text-[#158e45]">Control de Emisión</h2>
                 
-                <div class="space-y-6">
-                    <h2 class="text-xl font-black uppercase tracking-tight text-slate-200 flex items-center gap-3">
-                        <i data-lucide="key" class="text-[#158e45] w-5 h-5"></i>
-                        Llave Maestra
-                    </h2>
+                <div class="space-y-4">
+                    <button id="btnStart" onclick="iniciarTransmision()" class="w-full bg-[#158e45] hover:bg-[#1bbd5c] text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 transition-all shadow-xl">
+                        <i data-lucide="play-circle" class="w-8 h-8"></i>
+                        INICIAR SEÑAL
+                    </button>
+                    
+                    <button id="btnStop" onclick="detenerTransmision()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 transition-all border border-red-500/30 disabled:opacity-30" disabled>
+                        <i data-lucide="stop-circle" class="w-8 h-8"></i>
+                        FINALIZAR SEÑAL
+                    </button>
+                </div>
 
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex gap-2">
-                                <input type="text" id="streamKey" value="COOSAJO-LIVE-ELIAN" class="flex-1 input-key rounded-xl px-4 py-3 font-mono text-sm text-[#158e45] font-bold">
-                                <button onclick="copyKey()" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors">
-                                    <i data-lucide="copy" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fuente de Video -->
-                    <div class="pt-6 border-t border-white/5 space-y-4">
-                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest block text-center">Control de Captura</label>
-                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-[#158e45]/20 text-[#158e45] hover:bg-[#158e45] hover:text-white py-5 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 border border-[#158e45]/30 shadow-lg shadow-green-900/10">
-                            <i data-lucide="monitor-up" class="w-6 h-6 mb-1"></i>
-                            <span id="captureText">VINCULAR OBS / STICK</span>
-                        </button>
-                    </div>
-
-                    <!-- Parámetros -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Corte Ads</span>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-12 outline-none">
-                                <span class="text-[10px] font-bold opacity-30">MIN</span>
-                            </div>
-                        </div>
-                        <div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex flex-col justify-center">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Señal Red</span>
-                            <span id="networkTag" class="text-[10px] font-black text-blue-400 uppercase">En espera</span>
-                        </div>
-                    </div>
-
-                    <!-- Botón de Acción -->
-                    <div class="pt-6 border-t border-white/5">
-                        <button id="btnStart" onclick="publishStream()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 shadow-xl shadow-green-900/20 disabled:opacity-20">
-                            <i data-lucide="radio-receiver"></i> PUBLICAR SEÑAL
-                        </button>
-                        <button id="btnStop" onclick="stopStream()" disabled class="w-full btn-action mt-4 bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white py-4 rounded-2xl font-black text-xs border border-red-500/20 disabled:opacity-20">
-                            FINALIZAR TRANSMISIÓN
-                        </button>
-                    </div>
+                <div class="p-4 bg-white/5 rounded-2xl">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">Instrucciones:</p>
+                    <ul class="text-[10px] text-slate-500 space-y-1">
+                        <li>• Use "Proyector de Ventana" en OBS.</li>
+                        <li>• Capture esa ventana con el botón verde.</li>
+                        <li>• Asegure compartir el audio del sistema.</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Monitor Maestro -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
-            <div class="relative flex-1 glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-[8px] border-white/5 shadow-2xl">
-                <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
-                
-                <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity duration-700">
-                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                        <i data-lucide="video-off" class="w-8 h-8 text-slate-700 opacity-20"></i>
-                    </div>
-                    <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Monitor de Previsualización</p>
-                </div>
-
-                <!-- On Air Badge -->
-                <div id="onAirBadge" class="absolute top-8 left-8 bg-red-600 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
-                    <div class="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
-                    <span class="text-xs font-black uppercase tracking-widest">AL AIRE - ESQUIPULAS</span>
-                </div>
+        <div class="lg:col-span-2 relative glass rounded-[2.5rem] overflow-hidden bg-black flex items-center justify-center border-4 border-white/5 shadow-2xl">
+            <video id="previewVideo" class="w-full h-full object-contain" autoplay muted playsinline></video>
+            <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90">
+                <i data-lucide="monitor-off" class="w-20 h-20 text-slate-700 mb-4"></i>
+                <p class="text-slate-500 font-black uppercase tracking-[0.4em]">Esperando Señal de OBS</p>
             </div>
-
-            <!-- Listado de Agencias -->
-            <div class="glass p-6 rounded-3xl flex items-center justify-between">
-                <div class="flex items-center gap-8">
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Espectadores</span>
-                        <span id="agenciesCount" class="text-2xl font-black text-[#158e45]">0</span>
-                    </div>
-                    <div id="agenciesList" class="flex gap-2 overflow-x-auto max-w-md custom-scrollbar">
-                        <!-- Pantallas dinámicas -->
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic italic">COOSAJO R.L.</p>
-                    <p class="text-xs font-bold text-white uppercase">Mesa Técnica Maestra</p>
-                </div>
+            <div id="liveBadge" class="absolute top-6 left-6 bg-red-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest opacity-0 transition-opacity">
+                En Vivo
             </div>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getFirestore, doc, setDoc, onSnapshot, collection, query } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-
+    <script>
         lucide.createIcons();
-
-        // 1. Init Firebase (Sigue Regla 1 y 3)
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-platform-elian';
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        const preview = document.getElementById('preview');
-        let localStream = null;
+        const MASTER_KEY = 'COOSAJO-MASTER-MAGIC'; 
         let peer = null;
-        let user = null;
-        let activeScreens = [];
+        let localStream = null;
+        let activeCalls = new Set();
+        let connectedPeers = new Set();
 
-        // 2. Auth & Cloud Listeners
-        const init = async () => {
-            try {
-                await signInAnonymously(auth);
-                onAuthStateChanged(auth, (u) => {
-                    user = u;
-                    if (u) {
-                        document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase tracking-widest">Nube Conectada</span>`;
-                        listenToAgencies();
-                    }
-                });
-            } catch (e) { console.error("Error Auth:", e); }
-        };
+        function initMaster() {
+            if (peer) peer.destroy();
+            peer = new Peer(MASTER_KEY);
 
-        const listenToAgencies = () => {
-            if (!user) return;
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'screens'));
-            onSnapshot(q, (snapshot) => {
-                activeScreens = snapshot.docs.map(doc => doc.data());
-                updateUI();
+            peer.on('open', (id) => {
+                document.getElementById('statusLabel').textContent = "Mesa Lista";
+                document.getElementById('statusDot').className = "w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]";
+                console.log("Mesa Maestra lista con ID:", id);
             });
-        };
 
-        const updateUI = () => {
-            document.getElementById('agenciesCount').textContent = activeScreens.length;
-            const list = document.getElementById('agenciesList');
-            list.innerHTML = activeScreens.map(s => `
-                <div class="bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                    <span class="text-[9px] font-black uppercase opacity-60">${s.name || 'Agencia'}</span>
-                </div>
-            `).join('');
-        };
+            // Registro de conexiones de datos para el contador
+            peer.on('connection', (conn) => {
+                connectedPeers.add(conn.peer);
+                updateCounter();
+                
+                conn.on('close', () => {
+                    connectedPeers.delete(conn.peer);
+                    updateCounter();
+                });
+            });
 
-        // 3. Captura y Streaming
-        window.startCapture = async () => {
+            // Escuchar cuando una agencia llama
+            peer.on('call', (call) => {
+                console.log("Agencia solicitando señal...");
+                if (localStream) {
+                    call.answer(localStream);
+                    activeCalls.add(call);
+                } else {
+                    // Si no hay stream aún, guardamos la intención de la llamada
+                    // Las agencias modernas reintentarán la llamada cada pocos segundos
+                    // pero aceptamos la llamada con un stream vacío para mantener el canal si es necesario
+                    call.answer(); 
+                }
+            });
+
+            peer.on('error', (err) => {
+                if(err.type === 'unavailable-id') {
+                    console.error("ID ocupado.");
+                }
+                setTimeout(initMaster, 5000);
+            });
+        }
+
+        function updateCounter() {
+            document.getElementById('connCount').textContent = `${connectedPeers.size} pantallas`;
+        }
+
+        async function iniciarTransmision() {
             try {
-                // Optimización para Mac: Incluimos audio y preferimos capturar sistema
-                const constraints = {
-                    video: { 
-                        displaySurface: "window", // Preferencia de ventana
-                        frameRate: { ideal: 60, max: 60 },
-                        cursor: "never"
-                    },
-                    audio: {
-                        echoCancellation: false,
+                localStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { frameRate: 60, cursor: "never" },
+                    audio: { 
+                        echoCancellation: false, 
                         noiseSuppression: false,
-                        autoGainControl: false,
-                        suppressLocalAudioPlayback: false
+                        autoGainControl: false
                     }
-                };
-
-                localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
-                
-                preview.srcObject = localStream;
-                document.getElementById('noSignal').classList.add('opacity-0');
-                document.getElementById('btnStart').disabled = false;
-                document.getElementById('captureText').textContent = "PANTALLA VINCULADA";
-                document.getElementById('btnCapture').classList.add('opacity-50');
-                
-                // Init Peer con la Llave
-                const key = document.getElementById('streamKey').value;
-                if (peer) peer.destroy();
-                
-                peer = new Peer(key);
-                peer.on('open', (id) => {
-                    document.getElementById('networkTag').textContent = "Signal Live";
                 });
                 
-                peer.on('call', (call) => {
-                    if (localStream) call.answer(localStream);
-                });
+                document.getElementById('previewVideo').srcObject = localStream;
+                document.getElementById('noSignal').classList.add('hidden');
+                document.getElementById('liveBadge').classList.remove('opacity-0');
+                
+                const btnStart = document.getElementById('btnStart');
+                btnStart.disabled = true;
+                btnStart.classList.add('opacity-30');
+                document.getElementById('btnStop').disabled = false;
 
-                localStream.getVideoTracks()[0].onended = () => {
-                    window.stopStream();
-                };
-            } catch (e) { 
-                console.error("Error al capturar:", e);
-                alert("ERROR EN MAC:\n1. Asegúrate de que Chrome tiene permiso de 'Grabación de pantalla' en Ajustes de Mac.\n2. REINICIA Chrome si acabas de dar los permisos.\n3. Asegúrate de que el proyector de OBS esté abierto.");
+                // Si hay agencias conectadas antes de empezar, les mandamos la señal de una vez
+                // Nota: PeerJS requiere que la llamada se inicie. Aquí forzamos el refresco
+                // notificando a las agencias que el stream está listo.
+                console.log("Señal capturada. Las agencias recibirán el flujo en su próximo reintento.");
+
+                localStream.getVideoTracks()[0].onended = detenerTransmision;
+
+            } catch (err) {
+                console.error("Error al capturar:", err);
             }
-        };
+        }
 
-        window.publishStream = async () => {
-            if (!user) return;
-            const key = document.getElementById('streamKey').value;
-            const duration = document.getElementById('matchTime').value;
-
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
-                isLive: true,
-                streamKey: key,
-                matchDuration: parseInt(duration),
-                startTime: Date.now()
-            });
-
-            document.getElementById('onAirBadge').classList.remove('opacity-0');
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnStop').disabled = false;
-        };
-
-        window.stopStream = async () => {
-            if (!user) return;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
-                isLive: false
-            });
+        function detenerTransmision() {
             if (localStream) {
-                localStream.getTracks().forEach(t => t.stop());
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
             }
-            setTimeout(() => location.reload(), 800);
-        };
+            document.getElementById('previewVideo').srcObject = null;
+            document.getElementById('noSignal').classList.remove('hidden');
+            document.getElementById('liveBadge').classList.add('opacity-0');
+            
+            const btnStart = document.getElementById('btnStart');
+            btnStart.disabled = false;
+            btnStart.classList.remove('opacity-30');
+            document.getElementById('btnStop').disabled = true;
+            
+            // Recargamos el sistema de red
+            activeCalls.clear();
+            initMaster();
+        }
 
-        window.copyKey = () => {
-            const val = document.getElementById('streamKey').value;
-            navigator.clipboard.writeText(val);
-            alert("Llave COOSAJO copiada.");
-        };
-
-        init();
+        initMaster();
     </script>
 </body>
 </html>
