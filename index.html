@@ -13,38 +13,47 @@
     </style>
 </head>
 <body class="p-8 flex flex-col min-h-screen">
-    <header class="flex justify-between items-center bg-slate-800 p-6 rounded-3xl mb-8 border border-white/10">
+    <header class="flex justify-between items-center bg-slate-800 p-6 rounded-3xl mb-8 border border-white/10 shadow-2xl">
         <div class="flex items-center gap-4">
-            <img src="LOGO COOSAJO SIN ESLOGAN.png" class="h-12">
+            <img src="LOGO COOSAJO SIN ESLOGAN.png" class="h-12" onerror="this.src='https://placehold.co/200x50?text=COOSAJO'">
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tight">Emisor Maestro "El Magic"</h1>
-                <p class="text-green-400 text-xs font-bold uppercase tracking-widest">ID: COOSAJO-MASTER-MAGIC</p>
+                <p class="text-green-400 text-xs font-bold uppercase tracking-widest">ESTADO: <span id="masterStatus">INICIALIZANDO...</span></p>
             </div>
         </div>
-        <div id="statusDot" class="flex items-center gap-2 bg-red-500/20 text-red-500 px-4 py-2 rounded-xl border border-red-500/30">
-            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span class="text-xs font-black uppercase text-center">Desconectado de Red</span>
+        <div class="flex items-center gap-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-xl border border-green-500/30">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-xs font-black uppercase text-center tracking-widest">Canal: COOSAJO-MASTER-MAGIC</span>
         </div>
     </header>
 
     <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-black rounded-[2rem] overflow-hidden border-4 border-slate-700 relative aspect-video flex items-center justify-center">
+        <div class="bg-black rounded-[2.5rem] overflow-hidden border-4 border-slate-700 relative aspect-video flex items-center justify-center shadow-2xl">
             <video id="localVideo" class="w-full h-full object-contain" autoplay muted playsinline></video>
             <div id="noVideo" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600">
-                <i data-lucide="video-off" class="w-12 h-12 mb-2"></i>
-                <span class="font-bold uppercase text-xs">Sin Señal de OBS</span>
+                <i data-lucide="monitor-play" class="w-16 h-16 mb-4 opacity-20"></i>
+                <span class="font-bold uppercase text-sm tracking-widest text-center px-8">Esperando captura de OBS/Stick</span>
             </div>
         </div>
 
         <div class="flex flex-col gap-6">
-            <div class="bg-white/5 p-8 rounded-3xl border border-white/10">
-                <h3 class="text-sm font-black uppercase text-blue-400 mb-6">Controles de Emisión</h3>
-                <button onclick="iniciar()" class="w-full bg-[#158e45] hover:bg-green-500 text-white py-6 rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4">
-                    <i data-lucide="monitor"></i> Capturar Stick/OBS
+            <div class="bg-white/5 p-10 rounded-[2rem] border border-white/10 backdrop-blur-sm">
+                <h3 class="text-sm font-black uppercase text-blue-400 mb-8 tracking-[0.2em]">Panel de Control Maestro</h3>
+                
+                <div id="connectionError" class="hidden mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-xs font-bold uppercase">
+                    Error de Red: El entorno bloquea WebSockets. Use captura local para probar la estética.
+                </div>
+
+                <button onclick="iniciarEmision()" class="group w-full bg-[#158e45] hover:bg-green-500 text-white py-8 rounded-2xl font-black uppercase tracking-[0.2em] transition-all transform hover:scale-[1.02] active:scale-95 shadow-[0_20px_50px_rgba(21,142,69,0.3)] flex items-center justify-center gap-6">
+                    <i data-lucide="play-circle" class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
+                    <span>Capturar y Emitir</span>
                 </button>
-                <div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-[11px] text-yellow-200">
-                    <p class="font-bold mb-1 uppercase">⚠️ Nota de Seguridad:</p>
-                    Si aparece un error de "WebSocket connection", es una restricción del editor. La transmisión funcionará normalmente cuando el archivo se abra directamente en Chrome o se suba a GitHub.
+
+                <div class="mt-8 p-6 bg-blue-500/10 rounded-2xl border border-blue-500/20">
+                    <p class="text-[10px] text-blue-200 uppercase font-bold leading-relaxed">
+                        Instrucciones: Al hacer clic, selecciona la ventana de tu "Magic Stick" u OBS. 
+                        Asegúrate de marcar "Compartir audio del sistema" para que el sonido llegue a las agencias.
+                    </p>
                 </div>
             </div>
         </div>
@@ -53,35 +62,46 @@
     <script>
         lucide.createIcons();
         let localStream;
+        let peer;
         
-        try {
-            const peer = new Peer('COOSAJO-MASTER-MAGIC');
-            peer.on('open', () => {
-                const status = document.getElementById('statusDot');
-                status.classList.replace('bg-red-500/20', 'bg-green-500/20');
-                status.classList.replace('text-red-500', 'text-green-400');
-                status.querySelector('div').classList.replace('bg-red-500', 'bg-green-500');
-                status.querySelector('span').textContent = 'Red Lista (En Host Real)';
-            });
-
-            peer.on('call', (call) => {
-                if (localStream) {
-                    call.answer(localStream);
-                }
-            });
-            
-            peer.on('error', (err) => {
-                console.warn("PeerJS bloqueado por entorno de previsualización.");
-            });
-        } catch(e) {}
-
-        async function iniciar() {
+        function initPeer() {
             try {
-                localStream = await navigator.mediaDevices.getDisplayMedia({ video: {frameRate: 60}, audio: true });
+                peer = new Peer('COOSAJO-MASTER-MAGIC');
+                
+                peer.on('open', () => {
+                    document.getElementById('masterStatus').textContent = 'LISTO PARA EMITIR';
+                    document.getElementById('connectionError').classList.add('hidden');
+                });
+
+                peer.on('call', (call) => {
+                    if (localStream) call.answer(localStream);
+                });
+
+                peer.on('error', (err) => {
+                    console.warn("PeerJS Error:", err.type);
+                    if(err.type === 'socket-error' || err.type === 'network') {
+                        document.getElementById('connectionError').classList.remove('hidden');
+                        document.getElementById('masterStatus').textContent = 'ERROR DE RED (CANVAS)';
+                    }
+                });
+            } catch (e) {
+                document.getElementById('connectionError').classList.remove('hidden');
+            }
+        }
+
+        async function iniciarEmision() {
+            try {
+                localStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: { frameRate: 60, cursor: 'never' }, 
+                    audio: { echoCancellation: false } 
+                });
                 document.getElementById('localVideo').srcObject = localStream;
                 document.getElementById('noVideo').classList.add('hidden');
+                document.getElementById('masterStatus').textContent = 'EMITIENDO SEÑAL ACTIVA';
             } catch (e) { console.error(e); }
         }
+
+        initPeer();
     </script>
 </body>
 </html>
