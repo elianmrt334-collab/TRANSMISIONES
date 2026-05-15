@@ -18,6 +18,8 @@
         .input-key:focus { border-color: #158e45; outline: none; box-shadow: 0 0 15px rgba(21, 142, 69, 0.2); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        
+        .mac-card { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-6 lg:p-10">
@@ -30,14 +32,14 @@
             </div>
             <div>
                 <h1 class="text-3xl font-black uppercase tracking-tighter italic">Broadcaster Center</h1>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Cloud Platform v4.1 (Mac Compatible)</p>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">COOSAJO Cloud Platform v4.2 (Mac Enhanced)</p>
             </div>
         </div>
         
         <div class="flex items-center gap-4">
             <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
                 <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando...</span>
+                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando Nube...</span>
             </div>
         </div>
     </header>
@@ -45,19 +47,40 @@
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Panel de Control -->
         <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Diagnóstico Mac -->
+            <div class="glass p-6 rounded-[2rem] border-l-4 border-blue-500 mac-card">
+                <div class="flex items-center gap-3 mb-4">
+                    <i data-lucide="apple" class="text-blue-400 w-5 h-5"></i>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-blue-400">Guía para Mac de Elián</h3>
+                </div>
+                <div class="space-y-3 text-[11px] text-slate-300">
+                    <div class="flex gap-3">
+                        <span class="bg-blue-500/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0">1</span>
+                        <p>Si no ves la ventana de OBS: **Reinicia Chrome** (Cmd+Q) para refrescar los permisos de grabación.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="bg-blue-500/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0">2</span>
+                        <p>En OBS: Clic derecho en la escena > **Proyector de ventana (Previsualización)**. No la minimices.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="bg-blue-500/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0">3</span>
+                        <p>Al capturar: Si no sale la ventana individual, usa **"Pantalla completa"** y deja OBS a la vista.</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#158e45] to-transparent"></div>
                 
                 <div class="space-y-6">
                     <h2 class="text-xl font-black uppercase tracking-tight text-slate-200 flex items-center gap-3">
                         <i data-lucide="key" class="text-[#158e45] w-5 h-5"></i>
-                        Llave de Emisión
+                        Llave Maestra
                     </h2>
 
-                    <!-- Configuración de Llave -->
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest block mb-2">Llave Maestra de Transmisión</label>
                             <div class="flex gap-2">
                                 <input type="text" id="streamKey" value="COOSAJO-LIVE-ELIAN" class="flex-1 input-key rounded-xl px-4 py-3 font-mono text-sm text-[#158e45] font-bold">
                                 <button onclick="copyKey()" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors">
@@ -65,51 +88,39 @@
                                 </button>
                             </div>
                         </div>
-
-                        <!-- Ayuda para Mac -->
-                        <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                            <p class="text-[10px] text-blue-300 font-bold uppercase mb-2 flex items-center gap-2">
-                                <i data-lucide="apple" class="w-3 h-3"></i> Tips para Mac:
-                            </p>
-                            <ul class="text-[9px] text-slate-400 space-y-1 list-disc pl-3">
-                                <li>En OBS: Clic derecho > <strong>Proyector de ventana (Previsualización)</strong></li>
-                                <li>En Ajustes de Mac: Privacidad > Grabación de pantalla > Activa <strong>Chrome</strong></li>
-                                <li>Si no aparece la ventana de OBS, asegúrate de que <strong>no esté minimizada</strong></li>
-                            </ul>
-                        </div>
                     </div>
 
                     <!-- Fuente de Video -->
                     <div class="pt-6 border-t border-white/5 space-y-4">
-                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest block text-center">Fuente de Captura</label>
-                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-[#158e45]/20 text-[#158e45] hover:bg-[#158e45] hover:text-white py-5 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 border border-[#158e45]/30">
-                            <i data-lucide="monitor" class="w-6 h-6"></i>
-                            <span>VINCULAR OBS / PANTALLA</span>
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest block text-center">Control de Captura</label>
+                        <button id="btnCapture" onclick="startCapture()" class="w-full btn-action bg-[#158e45]/20 text-[#158e45] hover:bg-[#158e45] hover:text-white py-5 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 border border-[#158e45]/30 shadow-lg shadow-green-900/10">
+                            <i data-lucide="monitor-up" class="w-6 h-6 mb-1"></i>
+                            <span id="captureText">VINCULAR OBS / STICK</span>
                         </button>
                     </div>
 
                     <!-- Parámetros -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Bloque Ads</span>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Corte Ads</span>
                             <div class="flex items-center gap-2">
                                 <input type="number" id="matchTime" value="15" class="bg-transparent border-none text-2xl font-black text-[#158e45] w-12 outline-none">
                                 <span class="text-[10px] font-bold opacity-30">MIN</span>
                             </div>
                         </div>
                         <div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex flex-col justify-center">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Señal P2P</span>
-                            <span id="networkTag" class="text-[10px] font-black text-blue-400 uppercase">Standby</span>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase block mb-1">Señal Red</span>
+                            <span id="networkTag" class="text-[10px] font-black text-blue-400 uppercase">En espera</span>
                         </div>
                     </div>
 
                     <!-- Botón de Acción -->
                     <div class="pt-6 border-t border-white/5">
                         <button id="btnStart" onclick="publishStream()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-4 shadow-xl shadow-green-900/20 disabled:opacity-20">
-                            <i data-lucide="broadcast"></i> PUBLICAR SEÑAL
+                            <i data-lucide="radio-receiver"></i> PUBLICAR SEÑAL
                         </button>
                         <button id="btnStop" onclick="stopStream()" disabled class="w-full btn-action mt-4 bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white py-4 rounded-2xl font-black text-xs border border-red-500/20 disabled:opacity-20">
-                            DETENER TODO
+                            FINALIZAR TRANSMISIÓN
                         </button>
                     </div>
                 </div>
@@ -123,15 +134,15 @@
                 
                 <div id="noSignal" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-10 transition-opacity duration-700">
                     <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                        <i data-lucide="video-off" class="w-8 h-8 text-slate-700"></i>
+                        <i data-lucide="video-off" class="w-8 h-8 text-slate-700 opacity-20"></i>
                     </div>
-                    <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Esperando captura de OBS</p>
+                    <p class="text-slate-600 font-black uppercase tracking-[0.4em] text-[10px]">Monitor de Previsualización</p>
                 </div>
 
                 <!-- On Air Badge -->
                 <div id="onAirBadge" class="absolute top-8 left-8 bg-red-600 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl opacity-0 transition-opacity">
                     <div class="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
-                    <span class="text-xs font-black uppercase tracking-widest">AL AIRE EN AGENCIAS</span>
+                    <span class="text-xs font-black uppercase tracking-widest">AL AIRE - ESQUIPULAS</span>
                 </div>
             </div>
 
@@ -147,8 +158,8 @@
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sede Central</p>
-                    <p class="text-xs font-bold text-white">Esquipulas, Chiquimula</p>
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic italic">COOSAJO R.L.</p>
+                    <p class="text-xs font-bold text-white uppercase">Mesa Técnica Maestra</p>
                 </div>
             </div>
         </div>
@@ -163,7 +174,7 @@
 
         // 1. Init Firebase (Sigue Regla 1 y 3)
         const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-platform-key';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coosajo-platform-elian';
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -177,12 +188,11 @@
         // 2. Auth & Cloud Listeners
         const init = async () => {
             try {
-                // Regla 3: Auth antes de cualquier operación
                 await signInAnonymously(auth);
                 onAuthStateChanged(auth, (u) => {
                     user = u;
                     if (u) {
-                        document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase">Nube Sincronizada</span>`;
+                        document.getElementById('cloudStatus').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase tracking-widest">Nube Conectada</span>`;
                         listenToAgencies();
                     }
                 });
@@ -191,7 +201,6 @@
 
         const listenToAgencies = () => {
             if (!user) return;
-            // Regla 1: Ruta estricta de colección
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'screens'));
             onSnapshot(q, (snapshot) => {
                 activeScreens = snapshot.docs.map(doc => doc.data());
@@ -213,19 +222,28 @@
         // 3. Captura y Streaming
         window.startCapture = async () => {
             try {
-                // getDisplayMedia activará el selector nativo de macOS
-                localStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { frameRate: 60, cursor: "never" },
-                    audio: { 
-                        echoCancellation: false, 
+                // Optimización para Mac: Incluimos audio y preferimos capturar sistema
+                const constraints = {
+                    video: { 
+                        displaySurface: "window", // Preferencia de ventana
+                        frameRate: { ideal: 60, max: 60 },
+                        cursor: "never"
+                    },
+                    audio: {
+                        echoCancellation: false,
                         noiseSuppression: false,
-                        autoGainControl: false 
+                        autoGainControl: false,
+                        suppressLocalAudioPlayback: false
                     }
-                });
+                };
+
+                localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
                 
                 preview.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('opacity-0');
                 document.getElementById('btnStart').disabled = false;
+                document.getElementById('captureText').textContent = "PANTALLA VINCULADA";
+                document.getElementById('btnCapture').classList.add('opacity-50');
                 
                 // Init Peer con la Llave
                 const key = document.getElementById('streamKey').value;
@@ -233,7 +251,7 @@
                 
                 peer = new Peer(key);
                 peer.on('open', (id) => {
-                    document.getElementById('networkTag').textContent = "Server Online";
+                    document.getElementById('networkTag').textContent = "Signal Live";
                 });
                 
                 peer.on('call', (call) => {
@@ -245,7 +263,7 @@
                 };
             } catch (e) { 
                 console.error("Error al capturar:", e);
-                alert("No se pudo iniciar la captura. Asegúrate de dar permisos de 'Grabación de pantalla' a Chrome en Ajustes de Mac y que OBS no esté minimizado.");
+                alert("ERROR EN MAC:\n1. Asegúrate de que Chrome tiene permiso de 'Grabación de pantalla' en Ajustes de Mac.\n2. REINICIA Chrome si acabas de dar los permisos.\n3. Asegúrate de que el proyector de OBS esté abierto.");
             }
         };
 
@@ -254,7 +272,6 @@
             const key = document.getElementById('streamKey').value;
             const duration = document.getElementById('matchTime').value;
 
-            // Regla 1: Ruta estricta para el estado
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'broadcastStatus'), {
                 isLive: true,
                 streamKey: key,
@@ -281,7 +298,7 @@
         window.copyKey = () => {
             const val = document.getElementById('streamKey').value;
             navigator.clipboard.writeText(val);
-            alert("Llave copiada.");
+            alert("Llave COOSAJO copiada.");
         };
 
         init();
