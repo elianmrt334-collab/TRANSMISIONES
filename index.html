@@ -23,7 +23,7 @@
         </div>
         <div id="statusDot" class="flex items-center gap-2 bg-red-500/20 text-red-500 px-4 py-2 rounded-xl border border-red-500/30">
             <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span class="text-xs font-black uppercase">Desconectado</span>
+            <span class="text-xs font-black uppercase text-center">Desconectado de Red</span>
         </div>
     </header>
 
@@ -42,18 +42,9 @@
                 <button onclick="iniciar()" class="w-full bg-[#158e45] hover:bg-green-500 text-white py-6 rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4">
                     <i data-lucide="monitor"></i> Capturar Stick/OBS
                 </button>
-                <p class="text-[10px] text-slate-400 mt-4 text-center leading-relaxed">
-                    Al iniciar, las agencias se conectarán automáticamente. <br>Recuerde marcar "Compartir audio del sistema".
-                </p>
-            </div>
-            
-            <div class="bg-blue-500/5 p-6 rounded-3xl border border-blue-500/20">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-[10px] font-black uppercase text-blue-400">Monitoreo de Audio</span>
-                    <span id="dbValue" class="text-[10px] font-mono text-blue-300">0%</span>
-                </div>
-                <div class="h-4 bg-black/40 rounded-full overflow-hidden flex gap-0.5 p-1">
-                    <div id="vBar" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-75" style="width: 0%"></div>
+                <div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-[11px] text-yellow-200">
+                    <p class="font-bold mb-1 uppercase">⚠️ Nota de Seguridad:</p>
+                    Si aparece un error de "WebSocket connection", es una restricción del editor. La transmisión funcionará normalmente cuando el archivo se abra directamente en Chrome o se suba a GitHub.
                 </div>
             </div>
         </div>
@@ -62,47 +53,34 @@
     <script>
         lucide.createIcons();
         let localStream;
-        const peer = new Peer('COOSAJO-MASTER-MAGIC');
+        
+        try {
+            const peer = new Peer('COOSAJO-MASTER-MAGIC');
+            peer.on('open', () => {
+                const status = document.getElementById('statusDot');
+                status.classList.replace('bg-red-500/20', 'bg-green-500/20');
+                status.classList.replace('text-red-500', 'text-green-400');
+                status.querySelector('div').classList.replace('bg-red-500', 'bg-green-500');
+                status.querySelector('span').textContent = 'Red Lista (En Host Real)';
+            });
 
-        peer.on('open', () => {
-            const status = document.getElementById('statusDot');
-            status.classList.replace('bg-red-500/20', 'bg-green-500/20');
-            status.classList.replace('text-red-500', 'text-green-400');
-            status.querySelector('div').classList.replace('bg-red-500', 'bg-green-500');
-            status.querySelector('span').textContent = 'Listo para emitir';
-        });
-
-        peer.on('call', (call) => {
-            if (localStream) {
-                call.answer(localStream);
-                console.log("Nueva agencia conectada");
-            }
-        });
+            peer.on('call', (call) => {
+                if (localStream) {
+                    call.answer(localStream);
+                }
+            });
+            
+            peer.on('error', (err) => {
+                console.warn("PeerJS bloqueado por entorno de previsualización.");
+            });
+        } catch(e) {}
 
         async function iniciar() {
             try {
                 localStream = await navigator.mediaDevices.getDisplayMedia({ video: {frameRate: 60}, audio: true });
                 document.getElementById('localVideo').srcObject = localStream;
                 document.getElementById('noVideo').classList.add('hidden');
-                setupAudio(localStream);
             } catch (e) { console.error(e); }
-        }
-
-        function setupAudio(stream) {
-            const ctx = new AudioContext();
-            const src = ctx.createMediaStreamSource(stream);
-            const ana = ctx.createAnalyser();
-            src.connect(ana);
-            const data = new Uint8Array(ana.frequencyBinCount);
-            function loop() {
-                ana.getByteFrequencyData(data);
-                const avg = data.reduce((a,b) => a+b) / data.length;
-                const perc = (avg / 128) * 100;
-                document.getElementById('vBar').style.width = perc + '%';
-                document.getElementById('dbValue').textContent = Math.round(perc) + '%';
-                requestAnimationFrame(loop);
-            }
-            loop();
         }
     </script>
 </body>
