@@ -13,66 +13,47 @@
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-6 lg:p-10">
 
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div class="flex items-center gap-5">
-            <div class="w-14 h-14 bg-[#158e45] rounded-2xl flex items-center justify-center shadow-2xl shadow-green-900/20">
-                <i data-lucide="layout-dashboard" class="text-white w-8 h-8"></i>
-            </div>
-            <div>
-                <h1 class="text-3xl font-black uppercase tracking-tighter italic">Broadcaster Center</h1>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">Gestión: elianmrt334</p>
-            </div>
+    <header class="mb-10 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-black uppercase tracking-tighter italic">Broadcaster Center</h1>
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">Gestión: elianmrt334</p>
         </div>
-        <div class="flex items-center gap-4">
-            <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
-                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase opacity-60">Sincronizando Nube...</span>
-            </div>
+        <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
+            <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+            <span class="text-[10px] font-black uppercase opacity-60">Sincronizando...</span>
         </div>
     </header>
 
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-4 space-y-6">
-            <div class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-8 relative overflow-hidden">
-                <div class="space-y-6">
-                    <h2 class="text-xl font-black uppercase tracking-tight text-slate-200 flex items-center gap-3">
-                        <i data-lucide="zap" class="text-[#158e45] w-5 h-5"></i>
-                        Gestión de Sesión
-                    </h2>
-                    <button id="btnCapture" onclick="handleStartCapture()" class="w-full btn-action bg-slate-800 text-white py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-3 border border-white/10 shadow-lg">
-                        <i data-lucide="camera"></i> VINCULAR VENTANA (OBS)
-                    </button>
-                    <div class="pt-6 border-t border-white/5 space-y-4">
-                        <button id="btnStart" onclick="handleBroadcastStart()" disabled class="w-full btn-action bg-[#158e45] text-white py-6 rounded-2xl font-black text-xl shadow-xl shadow-green-900/20 disabled:opacity-20">
-                            PUBLICAR SEÑAL
-                        </button>
-                        <button id="btnStop" onclick="handleBroadcastStop()" disabled class="w-full btn-action bg-red-600/10 text-red-500 py-4 rounded-2xl font-black text-xs disabled:opacity-20">
-                            FINALIZAR TRANSMISIÓN
-                        </button>
-                    </div>
-                </div>
+            <!-- Bloque de Captura -->
+            <div class="glass p-8 rounded-[2.5rem] space-y-4">
+                <h2 class="text-xs font-black uppercase text-slate-400 mb-4">1. Captura de pantalla</h2>
+                <button id="btnCapture" onclick="handleStartCapture()" class="w-full btn-action bg-blue-600 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border border-blue-400/20">
+                    <i data-lucide="monitor-up"></i> SELECCIONAR VENTANA (OBS)
+                </button>
             </div>
             
-            <div class="glass p-6 rounded-[2rem]">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Pantallas Activas</h3>
-                <a href="https://elianmrt334-collab.github.io/Pantallas/" target="_blank" class="block text-[10px] font-bold text-blue-400 hover:underline mb-2">
-                    Abrir Portal de Pantallas
-                </a>
+            <!-- Bloque de Transmisión -->
+            <div class="glass p-8 rounded-[2.5rem] space-y-4">
+                <h2 class="text-xs font-black uppercase text-slate-400 mb-4">2. Control de emisión</h2>
+                <button id="btnStart" onclick="handleBroadcastStart()" disabled class="w-full btn-action bg-[#158e45] text-white py-4 rounded-2xl font-black text-xl shadow-lg disabled:opacity-30">
+                    PUBLICAR SEÑAL
+                </button>
+                <button id="btnStop" onclick="handleBroadcastStop()" class="w-full btn-action bg-red-900/50 text-red-400 py-3 rounded-2xl font-black text-xs hover:bg-red-800">
+                    FINALIZAR TRANSMISIÓN
+                </button>
             </div>
         </div>
 
-        <div class="lg:col-span-8 flex flex-col gap-6">
-            <div class="relative flex-1 glass rounded-[3rem] overflow-hidden bg-black flex items-center justify-center border-[8px] border-white/5 shadow-2xl">
-                <video id="preview" class="w-full h-full object-contain" autoplay muted playsinline></video>
-                <div id="noSignal" class="absolute inset-0 flex items-center justify-center bg-slate-950/90 transition-opacity duration-700">
-                    <p class="text-slate-600 font-black uppercase tracking-[0.5em] text-xs">Sin señal de video</p>
-                </div>
+        <div class="lg:col-span-8 glass rounded-[3rem] p-4 flex items-center justify-center">
+            <video id="preview" class="max-h-full rounded-2xl" autoplay muted playsinline></video>
+            <div id="noSignal" class="text-center text-slate-600 font-black uppercase tracking-[0.5em] text-xs">
+                Sin señal de captura
             </div>
         </div>
     </main>
@@ -86,28 +67,30 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-
         const MASTER_ID = 'COOSAJO-MASTER-ELIAN-DIRECT';
-        const preview = document.getElementById('preview');
-        let localStream = null;
+        
         let peer = null;
+        let localStream = null;
 
         const init = async () => {
             await signInAnonymously(auth);
-            // Configuración de servidor PeerJS local para evitar restricciones de WebSocket
+            // Configuración ajustada para omitir el servidor de señalización de PeerJS (WebSocket)
+            // y depender únicamente de la señalización a través de Firebase (RTDB/Firestore)
             peer = new Peer(MASTER_ID, {
-                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
+                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] },
+                debug: 3
             });
-            document.getElementById('cloudStatus').innerHTML = '<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase opacity-60">Nube Conectada</span>';
+            document.getElementById('cloudStatus').innerHTML = '<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase opacity-60">Listo para emitir</span>';
         };
 
         window.handleStartCapture = async () => {
             try {
-                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                preview.srcObject = localStream;
-                document.getElementById('noSignal').classList.add('opacity-0');
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                const video = document.getElementById('preview');
+                video.srcObject = localStream;
+                document.getElementById('noSignal').classList.add('hidden');
                 document.getElementById('btnStart').disabled = false;
-            } catch (err) { alert("Error al capturar: Revisa los permisos de pantalla."); }
+            } catch (err) { alert("Acceso denegado: Asegúrate de compartir tu pantalla en OBS."); }
         };
 
         window.handleBroadcastStart = async () => {
@@ -116,8 +99,7 @@
                 masterId: MASTER_ID,
                 updatedAt: Date.now()
             });
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnStop').disabled = false;
+            alert("¡Transmisión iniciada!");
         };
 
         window.handleBroadcastStop = async () => {
@@ -126,6 +108,7 @@
         };
 
         init();
+        lucide.createIcons();
     </script>
 </body>
 </html>
