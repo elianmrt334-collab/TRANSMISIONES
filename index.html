@@ -6,116 +6,60 @@
     <title>Mesa Técnica - COOSAJO Broadcast Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; margin: 0; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-    </style>
 </head>
-<body class="min-h-screen flex flex-col p-6 lg:p-10">
+<body class="bg-slate-950 text-white min-h-screen p-10">
 
-    <header class="mb-10 flex justify-between items-center">
-        <div>
-            <h1 class="text-3xl font-black uppercase tracking-tighter italic">Broadcaster Center</h1>
-            <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">Gestión: elianmrt334</p>
-        </div>
-        <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
-            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-[10px] font-black uppercase opacity-60">Listo para capturar</span>
-        </div>
-    </header>
+    <div class="max-w-4xl mx-auto space-y-8">
+        <header class="text-center space-y-2">
+            <h1 class="text-4xl font-black uppercase tracking-tighter">Broadcaster Center</h1>
+            <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Gestión Elián - Esquipulas</p>
+        </header>
 
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div class="lg:col-span-4 space-y-6">
-            <div class="glass p-8 rounded-[2.5rem] space-y-4">
-                <h2 class="text-xs font-black uppercase text-slate-400 mb-4">1. Captura de pantalla</h2>
-                <button id="btnCapture" onclick="handleStartCapture()" class="w-full btn-action bg-blue-600 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border border-blue-400/20">
-                    <i data-lucide="monitor-up"></i> SELECCIONAR VENTANA/PANTALLA
-                </button>
-            </div>
-            
-            <div class="glass p-8 rounded-[2.5rem] space-y-4">
-                <h2 class="text-xs font-black uppercase text-slate-400 mb-4">2. Control de emisión</h2>
-                <button id="btnStart" onclick="handleBroadcastStart()" disabled class="w-full btn-action bg-[#158e45] text-white py-4 rounded-2xl font-black text-xl shadow-lg disabled:opacity-30">
-                    PUBLICAR SEÑAL
-                </button>
-                <button id="btnStop" onclick="handleBroadcastStop()" class="w-full btn-action bg-red-900/50 text-red-400 py-3 rounded-2xl font-black text-xs hover:bg-red-800">
-                    FINALIZAR TRANSMISIÓN
-                </button>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button onclick="iniciarCaptura()" class="p-8 bg-blue-600 hover:bg-blue-700 rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all">
+                <i data-lucide="monitor"></i> INICIAR CAPTURA
+            </button>
+            <button id="btnPublicar" onclick="publicar()" disabled class="p-8 bg-green-700 disabled:bg-slate-800 rounded-3xl font-black text-lg shadow-xl transition-all">
+                PUBLICAR SEÑAL
+            </button>
         </div>
 
-        <div class="lg:col-span-8 glass rounded-[3rem] p-4 flex items-center justify-center border-2 border-white/5">
-            <video id="preview" class="max-h-full rounded-2xl" autoplay muted playsinline></video>
-            <div id="noSignal" class="text-center text-slate-600 font-black uppercase tracking-[0.5em] text-xs">
-                Esperando ventana...
-            </div>
+        <div class="bg-black border-4 border-slate-800 rounded-3xl overflow-hidden aspect-video flex items-center justify-center">
+            <video id="preview" autoplay muted playsinline class="w-full h-full object-contain"></video>
+            <span id="mensaje" class="text-slate-700 font-black tracking-widest uppercase text-sm">Sin señal</span>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
         import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const MASTER_ID = 'COOSAJO-MASTER-ELIAN-DIRECT';
-        
-        let localStream = null;
+        const db = getFirestore(initializeApp(JSON.parse(__firebase_config)));
+        const auth = getAuth(auth);
+        signInAnonymously(auth);
 
-        const init = async () => {
-            await signInAnonymously(auth);
-            console.log("Sistema inicializado.");
-        };
-
-        window.handleStartCapture = async () => {
+        window.iniciarCaptura = async () => {
             try {
-                // Se solicita acceso a pantalla completa sin restricciones para que el navegador 
-                // abra el selector de ventanas nativo del sistema operativo.
-                localStream = await navigator.mediaDevices.getDisplayMedia({ 
-                    video: { cursor: "always" }, 
-                    audio: true 
-                });
-                
+                // Intento básico de captura sin restricciones
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
                 const video = document.getElementById('preview');
-                video.srcObject = localStream;
-                document.getElementById('noSignal').classList.add('hidden');
-                document.getElementById('btnStart').disabled = false;
-                
-                // Si la captura se detiene manualmente en el navegador, resetear el sistema
-                localStream.getVideoTracks()[0].onended = () => {
-                    handleBroadcastStop();
-                };
-            } catch (err) { 
-                console.error(err);
-                alert("No se pudo iniciar la captura: " + err.message); 
+                video.srcObject = stream;
+                document.getElementById('mensaje').classList.add('hidden');
+                document.getElementById('btnPublicar').disabled = false;
+            } catch (err) {
+                alert("Error crítico: " + err.message + ". Asegúrate de estar en un servidor seguro (HTTPS).");
             }
         };
 
-        window.handleBroadcastStart = async () => {
+        window.publicar = async () => {
             await setDoc(doc(db, 'artifacts', 'broadcast-system', 'platform', 'state'), {
                 isLive: true,
-                masterId: MASTER_ID,
                 updatedAt: Date.now()
             });
-            alert("¡Transmisión activa!");
+            alert("Señal publicada en Firebase.");
         };
 
-        window.handleBroadcastStop = async () => {
-            if(localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-            await setDoc(doc(db, 'artifacts', 'broadcast-system', 'platform', 'state'), { isLive: false });
-            location.reload();
-        };
-
-        init();
         lucide.createIcons();
     </script>
 </body>
