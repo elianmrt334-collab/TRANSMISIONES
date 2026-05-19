@@ -3,30 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesa Técnica - COOSAJO Broadcast Platform</title>
+    <title>Mesa Técnica - COOSAJO Restream Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
-<body class="bg-slate-950 text-white min-h-screen p-10">
+<body class="bg-slate-950 text-white min-h-screen p-8">
 
-    <div class="max-w-4xl mx-auto space-y-8">
-        <header class="text-center space-y-2">
-            <h1 class="text-4xl font-black uppercase tracking-tighter">Broadcaster Center</h1>
-            <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Gestión Elián - Esquipulas</p>
+    <div class="max-w-6xl mx-auto space-y-8">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-black uppercase tracking-tighter">Restream Engine</h1>
+                <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Núcleo: Elián - Esquipulas</p>
+            </div>
+            <div id="statusIndicator" class="px-4 py-2 bg-slate-900 rounded-full text-xs font-bold text-slate-400">Estado: Inactivo</div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <button onclick="iniciarCaptura()" class="p-8 bg-blue-600 hover:bg-blue-700 rounded-3xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all">
-                <i data-lucide="monitor"></i> INICIAR CAPTURA
-            </button>
-            <button id="btnPublicar" onclick="publicar()" disabled class="p-8 bg-green-700 disabled:bg-slate-800 rounded-3xl font-black text-lg shadow-xl transition-all">
-                PUBLICAR SEÑAL
-            </button>
-        </div>
-
-        <div class="bg-black border-4 border-slate-800 rounded-3xl overflow-hidden aspect-video flex items-center justify-center">
-            <video id="preview" autoplay muted playsinline class="w-full h-full object-contain"></video>
-            <span id="mensaje" class="text-slate-700 font-black tracking-widest uppercase text-sm">Sin señal</span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-black border-4 border-slate-800 rounded-3xl overflow-hidden aspect-video flex items-center justify-center relative">
+                    <video id="preview" autoplay muted playsinline class="w-full h-full object-contain"></video>
+                    <span id="mensaje" class="absolute text-slate-700 font-black tracking-widest uppercase text-sm">Sin señal de captura</span>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button onclick="iniciarCaptura()" class="flex-1 p-6 bg-blue-600 rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition-all">
+                        <i data-lucide="monitor"></i> Vincular Fuente
+                    </button>
+                    <button id="btnPublicar" onclick="publicar()" disabled class="flex-1 p-6 bg-green-700 rounded-2xl font-black uppercase text-sm hover:bg-green-800 disabled:bg-slate-800 disabled:text-slate-500 transition-all">
+                        Transmitir a todos
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -39,25 +47,34 @@
         const auth = getAuth(auth);
         signInAnonymously(auth);
 
+        const MASTER_ID = 'COOSAJO-MASTER-ELIAN-DIRECT';
+        const peer = new Peer(MASTER_ID); // Usamos el ID fijo que esperan las pantallas
+        let localStream = null;
+
         window.iniciarCaptura = async () => {
             try {
-                // Intento básico de captura sin restricciones
-                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                const video = document.getElementById('preview');
-                video.srcObject = stream;
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                document.getElementById('preview').srcObject = localStream;
                 document.getElementById('mensaje').classList.add('hidden');
                 document.getElementById('btnPublicar').disabled = false;
-            } catch (err) {
-                alert("Error crítico: " + err.message + ". Asegúrate de estar en un servidor seguro (HTTPS).");
-            }
+                
+                // Responder a las pantallas cuando intenten conectarse
+                peer.on('call', (call) => {
+                    call.answer(localStream);
+                });
+
+                document.getElementById('statusIndicator').textContent = "Estado: Fuente lista (Esperando Agencias)";
+            } catch (err) { alert("Error: " + err.message); }
         };
 
         window.publicar = async () => {
             await setDoc(doc(db, 'artifacts', 'broadcast-system', 'platform', 'state'), {
                 isLive: true,
+                masterId: MASTER_ID, // Esto es lo que le dice a las pantallas donde conectarse
                 updatedAt: Date.now()
             });
-            alert("Señal publicada en Firebase.");
+            document.getElementById('statusIndicator').textContent = "Estado: Transmitiendo a Pantallas";
+            document.getElementById('statusIndicator').className = "px-4 py-2 bg-green-900/20 rounded-full text-xs font-bold text-green-500";
         };
 
         lucide.createIcons();
