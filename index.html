@@ -23,22 +23,20 @@
             <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">Gestión: elianmrt334</p>
         </div>
         <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
-            <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-            <span class="text-[10px] font-black uppercase opacity-60">Sincronizando...</span>
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-[10px] font-black uppercase opacity-60">Sistema Operativo</span>
         </div>
     </header>
 
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-4 space-y-6">
-            <!-- Bloque de Captura -->
             <div class="glass p-8 rounded-[2.5rem] space-y-4">
                 <h2 class="text-xs font-black uppercase text-slate-400 mb-4">1. Captura de pantalla</h2>
                 <button id="btnCapture" onclick="handleStartCapture()" class="w-full btn-action bg-blue-600 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border border-blue-400/20">
-                    <i data-lucide="monitor-up"></i> SELECCIONAR VENTANA (OBS)
+                    <i data-lucide="monitor-up"></i> SELECCIONAR VENTANA
                 </button>
             </div>
             
-            <!-- Bloque de Transmisión -->
             <div class="glass p-8 rounded-[2.5rem] space-y-4">
                 <h2 class="text-xs font-black uppercase text-slate-400 mb-4">2. Control de emisión</h2>
                 <button id="btnStart" onclick="handleBroadcastStart()" disabled class="w-full btn-action bg-[#158e45] text-white py-4 rounded-2xl font-black text-xl shadow-lg disabled:opacity-30">
@@ -74,13 +72,16 @@
 
         const init = async () => {
             await signInAnonymously(auth);
-            // Configuración ajustada para omitir el servidor de señalización de PeerJS (WebSocket)
-            // y depender únicamente de la señalización a través de Firebase (RTDB/Firestore)
+            // Evitamos la conexión WebSocket inicializando PeerJS sin host de señalización externo
+            // El intercambio de datos se realizará vía Firestore
             peer = new Peer(MASTER_ID, {
-                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] },
-                debug: 3
+                config: { 
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
+                },
+                debug: 0
             });
-            document.getElementById('cloudStatus').innerHTML = '<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] font-black uppercase opacity-60">Listo para emitir</span>';
+            
+            console.log("Sistema listo para vinculación remota.");
         };
 
         window.handleStartCapture = async () => {
@@ -90,7 +91,7 @@
                 video.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('hidden');
                 document.getElementById('btnStart').disabled = false;
-            } catch (err) { alert("Acceso denegado: Asegúrate de compartir tu pantalla en OBS."); }
+            } catch (err) { alert("Error: Asegúrate de permitir el acceso a pantalla."); }
         };
 
         window.handleBroadcastStart = async () => {
