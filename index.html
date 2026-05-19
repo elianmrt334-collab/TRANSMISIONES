@@ -24,7 +24,7 @@
         </div>
         <div id="cloudStatus" class="flex items-center gap-3 px-5 py-2.5 bg-slate-900/50 rounded-2xl border border-white/5">
             <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-[10px] font-black uppercase opacity-60">Sistema Operativo</span>
+            <span class="text-[10px] font-black uppercase opacity-60">Listo para capturar</span>
         </div>
     </header>
 
@@ -33,7 +33,7 @@
             <div class="glass p-8 rounded-[2.5rem] space-y-4">
                 <h2 class="text-xs font-black uppercase text-slate-400 mb-4">1. Captura de pantalla</h2>
                 <button id="btnCapture" onclick="handleStartCapture()" class="w-full btn-action bg-blue-600 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border border-blue-400/20">
-                    <i data-lucide="monitor-up"></i> SELECCIONAR VENTANA
+                    <i data-lucide="monitor-up"></i> SELECCIONAR VENTANA/PANTALLA
                 </button>
             </div>
             
@@ -48,10 +48,10 @@
             </div>
         </div>
 
-        <div class="lg:col-span-8 glass rounded-[3rem] p-4 flex items-center justify-center">
+        <div class="lg:col-span-8 glass rounded-[3rem] p-4 flex items-center justify-center border-2 border-white/5">
             <video id="preview" class="max-h-full rounded-2xl" autoplay muted playsinline></video>
             <div id="noSignal" class="text-center text-slate-600 font-black uppercase tracking-[0.5em] text-xs">
-                Sin señal de captura
+                Esperando ventana...
             </div>
         </div>
     </main>
@@ -67,31 +67,35 @@
         const auth = getAuth(app);
         const MASTER_ID = 'COOSAJO-MASTER-ELIAN-DIRECT';
         
-        let peer = null;
         let localStream = null;
 
         const init = async () => {
             await signInAnonymously(auth);
-            // Evitamos la conexión WebSocket inicializando PeerJS sin host de señalización externo
-            // El intercambio de datos se realizará vía Firestore
-            peer = new Peer(MASTER_ID, {
-                config: { 
-                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
-                },
-                debug: 0
-            });
-            
-            console.log("Sistema listo para vinculación remota.");
+            console.log("Sistema inicializado.");
         };
 
         window.handleStartCapture = async () => {
             try {
-                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                // Se solicita acceso a pantalla completa sin restricciones para que el navegador 
+                // abra el selector de ventanas nativo del sistema operativo.
+                localStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: { cursor: "always" }, 
+                    audio: true 
+                });
+                
                 const video = document.getElementById('preview');
                 video.srcObject = localStream;
                 document.getElementById('noSignal').classList.add('hidden');
                 document.getElementById('btnStart').disabled = false;
-            } catch (err) { alert("Error: Asegúrate de permitir el acceso a pantalla."); }
+                
+                // Si la captura se detiene manualmente en el navegador, resetear el sistema
+                localStream.getVideoTracks()[0].onended = () => {
+                    handleBroadcastStop();
+                };
+            } catch (err) { 
+                console.error(err);
+                alert("No se pudo iniciar la captura: " + err.message); 
+            }
         };
 
         window.handleBroadcastStart = async () => {
@@ -100,10 +104,13 @@
                 masterId: MASTER_ID,
                 updatedAt: Date.now()
             });
-            alert("¡Transmisión iniciada!");
+            alert("¡Transmisión activa!");
         };
 
         window.handleBroadcastStop = async () => {
+            if(localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
             await setDoc(doc(db, 'artifacts', 'broadcast-system', 'platform', 'state'), { isLive: false });
             location.reload();
         };
